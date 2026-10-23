@@ -1,0 +1,6 @@
+{
+  "name": "Sacred Mechanics",
+  "description": "A luminous puzzle odyssey across ancient Japan, India, and Egypt featuring authentic Sokoban, temple maze, and sand-locking puzzle mechanics in bright, living daylight environments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,612 @@
+# FINAL MASTER FINISHING PROMPT — SACRED PATTERNS
+## Character Companions, Immersive Audio, UI Polish & Final QA
+
+Act as a senior game developer, character artist, animation designer, audio director, UI/UX specialist, and QA engineer.
+
+Perform the final professional finishing pass on my EXISTING **Sacred Patterns** game. The three playable worlds already exist:
+
+1. **India — The Lost Seal of the Indus Valley**
+2. **Japan — Zen Trail**
+3. **Egypt — Ankh Link**
+
+The environments and puzzle mechanics are already established. I now want to introduce beautifully integrated humanoid companion characters, improve the audio experience, polish the UI, remove unnecessary or nonfunctional elements, and verify the complete game.
+
+**Modify the existing project directly. Do not rebuild it from scratch, replace working puzzles, or turn the game into a static mockup.** Inspect the current code and the uploaded Character Design Bible before making changes. Use the uploaded character descriptions as the source of truth for character appearance, personality, profession, and behavior.
+
+Prioritize quality and reliability over adding unnecessary features.
+
+---
+
+# 1. ADD HUMANOID COMPANIONS TO ALL THREE WORLDS
+
+The game currently needs a stronger sense of presence and storytelling. Each country should have its own humanoid character who accompanies the player through the level.
+
+The characters must feel like part of the world, not like emojis, generic avatars, circular profile pictures, or unrelated illustrations pasted onto the interface.
+
+Use the six characters defined in the uploaded Character Design Bible.
+
+## A. INDIA — AMARA AND VIKRAM
+
+The Indian level is **The Lost Seal of the Indus Valley**, set in a fictional archaeological chamber beneath Mohenjo-daro.
+
+### Character 1: Amara — The Sacred Altar Keeper
+
+<text>**Visual identity from the uploaded Character Design Bible**</text>
+
+- Young female character with a calm, mystical, intuitive presence.
+- Flowing ochre and indigo robes with gold trim.
+- Heavy brass armlets.
+- Hair arranged in a practical bun.
+- A sacred measuring cord used for plotting geometric patterns.
+- A small copper bowl for offerings.
+- Palms stained with sandalwood paste.
+
+**Personality and behavior**
+
+Amara is patient, thoughtful, and deeply attentive to patterns. She studies a puzzle before interacting with it and speaks in thoughtful, proverb-like observations.
+
+**Companion behavior**
+
+- Introduce Amara near the entrance to the archaeological chamber.
+- Have her direct the player's attention toward the three ancient seals.
+- When the player inspects a clue, she can make a short observation.
+- When a seal arrangement is incorrect, she encourages the player to compare the clues rather than giving away the answer immediately.
+- When the correct sequence is discovered, she reacts with quiet wonder.
+- During the treasure reveal, she observes the craftsmanship and geometry of the artifacts.
+
+Example dialogue:
+
+- Introduction: "Every symbol has its place. Let us discover what these three were meant to reveal."
+- Hint: "The inscription is a pattern. Look carefully at the position of each symbol."
+- Success: "The sequence is restored. Even the smallest mark has meaning."
+
+### Character 2: Vikram — The Stepwell Architect
+
+<text>**Visual identity from the uploaded Character Design Bible**</text>
+
+- Young, energetic male architect.
+- Cream kurta and terracotta dhoti.
+- Worn leather tool belt.
+- Folding wooden measuring stick.
+- Rolled palm-leaf blueprint.
+- Small bronze plumb bob.
+- Turban secured with an emerald pin.
+- Practical, hands-on personality.
+
+**Companion behavior**
+
+Vikram approaches the chamber as an engineering problem. He is energetic, practical, and lightly humorous.
+
+- He examines the stone door mechanism.
+- He comments on the arrangement of the seal slots.
+- He reacts to the mechanism's movement when the door opens.
+- He helps frame the mathematical inscription as a problem to solve.
+- He celebrates the treasure discovery with enthusiasm.
+
+Example dialogue:
+
+- Introduction: "Three slots, three seals. There has to be a logical arrangement."
+- Hint: "Start with what the inscription fixes in place. Then work outward."
+- Success: "Perfect alignment! Now that is a mechanism worth studying."
+
+### Important historical distinction
+
+The uploaded descriptions place Amara and Vikram in the Gupta heartland, while the game takes place in an Indus Valley-inspired setting. Preserve their supplied visual identities and personalities, but present them as **fictional game companions accompanying the player's archaeological adventure**, not as documented inhabitants of Mohenjo-daro or historically verified Indus Valley characters.
+
+Do not alter the Indian puzzle's established mechanics to fit their original character concepts.
+
+---
+
+## B. JAPAN — YUKI AND KENJI
+
+The Japanese level is **Zen Trail**, inspired by karesansui dry landscape gardens.
+
+### Character 3: Yuki — The Shrine Oracle
+
+<text>**Visual identity from the uploaded Character Design Bible**</text>
+
+- Female Heian-inspired oracle.
+- White haori jacket and red hakama.
+- Gohei ritual wand in one hand.
+- Small silver bell in the other.
+- Tabi socks and wooden geta sandals.
+- Long black hair tied with a simple red cord.
+- Gentle, spiritual, and perceptive personality.
+
+**Companion behavior**
+
+Yuki should feel connected to the garden's peaceful atmosphere.
+
+- She appears beside the Zen garden, without covering the puzzle grid.
+- She gently introduces the idea of creating a continuous, uninterrupted rake trail.
+- She responds calmly when the player makes a mistake.
+- As the path grows, she watches the emerging pattern.
+- On completion, she gives a small respectful gesture as the temple bell rings.
+
+Example dialogue:
+
+- Introduction: "Let every line flow without breaking. The garden will reveal its balance."
+- Invalid move: "The line has lost its flow. Let us find another path."
+- Success: "The garden is at peace. Nothing more needs to be added."
+
+### Character 4: Kenji — The Tatami Master
+
+<text>**Visual identity from the uploaded Character Design Bible**</text>
+
+- Male craftsman.
+- Deep blue hakama.
+- White kimono top and pale indigo haori.
+- Cloth wraps around his palms.
+- Short wooden measuring rule tucked into his obi.
+- Wooden geta sandals.
+- Reserved, disciplined, and observant personality.
+
+**Companion behavior**
+
+Kenji approaches Zen Trail with precision and practical observation.
+
+- He examines the stone placement before the player starts.
+- He gives concise suggestions about possible routes.
+- He reacts subtly when the player creates a clean continuous trail.
+- He avoids excessive gestures or constant dialogue.
+
+Example dialogue:
+
+- Introduction: "One continuous line. Each turn must be deliberate."
+- Hint: "Check the open neighbors before committing to the next square."
+- Success: "Every cell aligned. A clean path, with nothing wasted."
+
+Do not add the old Sokoban mechanics from earlier concepts. Kenji is a character companion for the current Zen Trail puzzle.
+
+---
+
+## C. EGYPT — KIYA AND AHMose
+
+The Egyptian level is **Ankh Link**, a temple-based puzzle in which the player connects matching hieroglyphic-inspired symbols without crossing paths.
+
+Egypt must have a clearly visible Egyptian humanoid companion throughout the puzzle.
+
+### Character 5: Kiya — The Horizon Watcher
+
+<text>**Visual identity from the uploaded Character Design Bible**</text>
+
+- Female temple scholar from a New Kingdom-inspired setting.
+- Fitted gown made from deep lapis lazuli-colored linen.
+- Wide gold cuffs.
+- Broad jeweled collar.
+- Smooth-shaven head covered by a fitted cap of gold-beaded netting.
+- Eyes heavily lined with kohl.
+- Wax writing tablet and bronze sighting tool.
+- Sharp-witted, ambitious, and impatient with inefficiency.
+
+**Companion behavior**
+
+Kiya treats the Ankh Link puzzle like a problem of precise alignment and spatial reasoning.
+
+- She stands beside the temple's puzzle wall.
+- She inspects the symbols before the player begins.
+- She reacts when a path approaches a conflict with another path.
+- She encourages the player to consider the order of connections.
+- When the complete wall is restored, she reacts with triumphant satisfaction.
+
+Example dialogue:
+
+- Introduction: "Four pairs, one wall. Every connection must fall exactly where it belongs."
+- Hint: "Do not follow the nearest symbol blindly. Consider the paths that remain open."
+- Invalid move: "That route conflicts with another. Reconsider the alignment."
+- Success: "Excellent. The pattern is whole, and every line has its place."
+
+### Character 6: Ahmose — The Lotus Keeper
+
+<text>**Visual identity from the uploaded Character Design Bible**</text>
+
+- Male steward from the Nile Delta.
+- Sun-tanned complexion and sturdy build.
+- Simple white linen kilt.
+- Deep green sash.
+- Woven reed sandals.
+- Bare chest with a simple ankh pendant.
+- Leather tool harness.
+- Close-cropped curly hair.
+- Warm, nurturing, and optimistic personality.
+
+**Companion behavior**
+
+Ahmose offers a gentler, more encouraging interpretation of restoring the ancient wall.
+
+- He welcomes the player into the temple.
+- He notices how separate symbols gradually become connected.
+- He responds warmly to incremental progress.
+- He celebrates the final restoration as the return of balance and life.
+
+Example dialogue:
+
+- Introduction: "Every symbol belongs somewhere. Let us help them find one another."
+- Hint: "Look at the empty spaces. A path needs room to reach its destination."
+- Success: "Look at the wall now. Everything is connected again."
+
+Do not add water-flow or lotus-growing gameplay from Ahmose's original character concept. The current Egyptian game remains Ankh Link.
+
+---
+
+# 2. CHARACTER SELECTION AND COMPANION BEHAVIOR
+
+First inspect the existing character selection screen and character state.
+
+If the six characters already exist in the project, improve their integration rather than creating duplicates.
+
+If no working character selection exists, add a polished **Choose Your Companion** screen with six character cards arranged in a responsive grid.
+
+Each card must show:
+- A full-body character illustration or sprite.
+- Name and profession.
+- Country.
+- A short personality description.
+- A clear selection state.
+
+The six characters are:
+
+| Country | Character | Role |
+|---|---|---|
+| India | Amara | Sacred Altar Keeper |
+| India | Vikram | Stepwell Architect |
+| Japan | Yuki | Shrine Oracle |
+| Japan | Kenji | Tatami Master |
+| Egypt | Kiya | Horizon Watcher |
+| Egypt | Ahmose | Lotus Keeper |
+
+After the player selects a character, that character accompanies them in their corresponding world.
+
+The selected character must not appear in an unrelated country. For example, Yuki and Kenji belong to Japan, while Kiya and Ahmose belong to Egypt.
+
+Where practical, allow the player to choose a companion for each country independently. Do not force the player to use a Japanese character in the Indian or Egyptian level.
+
+Persist selections locally if appropriate.
+
+## Companion rendering
+
+The character should be visibly present within the environment:
+
+- Use a full-body sprite or illustration beside the puzzle board, near the entrance, or in a suitable foreground area.
+- Keep the character large enough to recognize and appreciate.
+- Use a consistent art style across all six characters.
+- Give the character a natural stance, readable silhouette, and appropriate proportions.
+- Use subtle idle animation, such as breathing, blinking, small posture changes, or gentle cloth movement.
+- Add occasional context-sensitive gestures for puzzle interactions and completion.
+- Use a small speech bubble or dialogue panel that fits the active country's UI theme.
+- Keep the puzzle board unobstructed.
+- On mobile, reposition the character above or below the puzzle board instead of covering interactive cells.
+
+Characters must remain visible during the main gameplay and should not disappear after the introduction.
+
+## Asset integration
+
+Inspect the uploaded character assets and the current project's asset directory.
+
+If actual character illustrations, sprite sheets, or PixelLab-generated assets are available:
+- Use the appropriate assets for each character.
+- Preserve their appearance and proportions.
+- Add animation only when the source assets support it or when it can be done without distorting the character.
+
+If the assets are not available in the current project:
+- Use the uploaded Character Design Bible to create consistent visual placeholders or original stylized humanoid illustrations.
+- Prefer clean, layered CSS/SVG or existing local assets over generic emoji characters.
+- Keep the asset references configurable so the real PixelLab sprites can be substituted later.
+- Provide a graceful fallback if an image fails to load.
+
+Do not invent file paths and assume the assets exist. Check the project first.
+
+---
+
+# 3. CHARACTER DIALOGUE AND PUZZLE FEEDBACK
+
+Characters should add personality without turning the game into a conversation simulator.
+
+Implement a lightweight dialogue system with these event types:
+
+- Level introduction.
+- First clue or puzzle inspection.
+- Optional hint.
+- Invalid move.
+- Puzzle progress milestone.
+- Puzzle completion.
+- Final treasure or restoration reveal.
+
+Requirements:
+
+- Use the character-specific dialogue provided above as the initial content.
+- Keep dialogue short and contextually relevant.
+- Show the introduction dialogue when entering a level.
+- Let the player dismiss dialogue by clicking or tapping.
+- Do not block gameplay while dialogue is visible.
+- Avoid showing dialogue after every single move.
+- Use varied but restrained reactions for repeated mistakes.
+- Do not repeat the same dialogue continuously.
+- Keep text readable and consistent with each country's visual theme.
+- Do not use dialogue to reveal a full solution unless the player explicitly requests the strongest hint.
+
+Add a small character portrait and name beside the dialogue, but retain the full-body companion in the scene.
+
+---
+
+# 4. FINAL AUDIO DESIGN — WORLD-SPECIFIC MUSIC AND EFFECTS
+
+Improve the existing audio system rather than adding a competing one.
+
+The audio must reinforce each world's atmosphere and react naturally to player actions.
+
+## India — Archaeological Mystery
+
+Background music:
+- Warm, restrained ambient textures.
+- Tanpura-like drones and sparse bansuri-inspired melodic phrases.
+- A sense of discovery and quiet mystery.
+- Minimal percussion and enough space for puzzle-solving.
+
+Sound effects:
+- Tactile stone or terracotta seal selection.
+- Subtle seal-placement sounds.
+- Gentle inscription-reveal textures.
+- Deep, weighty stone mechanism movement.
+- A satisfying stone-lock sound when the correct sequence is entered.
+- Warm shimmering discovery sounds during the treasure reveal.
+
+Character audio:
+- Amara should feel calm and reflective.
+- Vikram should feel energetic and practical.
+- Use short optional vocal reactions only if appropriate audio assets exist. Do not synthesize fake speech that sounds unintelligible.
+
+## Japan — Zen Trail
+
+Background music:
+- Sparse, meditative ambience inspired by shakuhachi and koto timbres.
+- Gentle flute-like phrases and delicate plucked notes.
+- Spacious silence between musical phrases.
+- Subtle breeze or distant birds, used sparingly.
+
+Sound effects:
+- Fine-grained sand-raking sound for valid trail extensions.
+- Soft stone taps for selections.
+- A restrained sound for invalid moves.
+- A beautiful, resonant temple bell on completion.
+
+Character audio:
+- Yuki should feel gentle and contemplative.
+- Kenji should feel quiet and precise.
+- Keep reactions subtle enough that the garden remains peaceful.
+
+## Egypt — Ankh Link
+
+Background music:
+- Warm, resonant ambient textures.
+- Sparse plucked-string-inspired motifs.
+- A sense of entering a monumental ancient temple.
+- A slightly more ceremonial atmosphere than Japan, without excessive drama.
+
+Sound effects:
+- Small stone clicks for symbol selection.
+- Smooth tracing sounds for path extensions.
+- Subtle resonances for completed connections.
+- Restrained warning sounds for invalid paths.
+- Layered chimes and a gradual golden shimmer during the final wall restoration.
+
+Character audio:
+- Kiya should feel sharp, confident, and analytical.
+- Ahmose should feel warm, patient, and encouraging.
+
+These are artistic interpretations inspired by each setting, not claims of authentic historical recordings or exact reconstructions of ancient music.
+
+## Audio implementation
+
+Create or refine one centralized audio manager.
+
+It must support:
+- Separate background music for each world.
+- Separate sound-effect channels.
+- A global mute control.
+- Independent music and sound-effect volume controls.
+- Smooth fades when entering and leaving worlds.
+- No duplicate background tracks.
+- Correct cleanup when a world becomes inactive.
+- No audio playing after the game is muted or a level is exited.
+- Graceful handling of missing files.
+- Browser autoplay restrictions and user-gesture requirements.
+
+Reuse existing suitable audio assets. If music files are missing, use a restrained procedural ambient fallback where practical. Use browser-supported synthesis for short effects when appropriate.
+
+Do not use one generic beep for every interaction. Avoid repetitive, irritating procedural loops.
+
+Muting must silence background music, sound effects, procedural audio, and completion sounds. Unmuting should restore playback at the user's chosen volume.
+
+---
+
+# 5. FINAL UI THEMING
+
+Keep a consistent overall interface structure but give each country its own polished visual language.
+
+## India
+
+- Sandstone, terracotta, warm ivory, muted teal, and antique gold.
+- Carved-stone-inspired buttons and panels.
+- Ancient inscription styling for clues and journal entries.
+- Clear seal slots and an obvious central puzzle area.
+- Amara or Vikram positioned naturally within the archaeological scene.
+
+## Japan
+
+- Gravel white, stone grey, moss green, natural wood, and restrained vermilion.
+- Minimal panels and generous whitespace.
+- Subtle, elegant focus and selection states.
+- Yuki or Kenji integrated into the garden without blocking the rake grid.
+
+## Egypt
+
+- Sandstone, antique gold, muted turquoise, and lapis-inspired blue.
+- Temple-inspired geometric borders.
+- Clearly differentiated selected, completed, and invalid paths.
+- Kiya or Ahmose standing beside the wall puzzle as an active companion.
+- A clear visual connection between the character and the environment.
+
+## Global UI requirements
+
+- Consistent navigation and control placement where practical.
+- Clear active, hover, focus, disabled, success, and error states.
+- Accessible text contrast and readable fonts.
+- Responsive layouts for desktop, tablet, and mobile.
+- No unnecessary panels or decorative clutter.
+- No character artwork covering puzzle cells or essential controls.
+- No Japanese scenery, audio, or decorative assets leaking into India or Egypt.
+- No opaque overlays hiding the environment.
+
+Do not redesign already successful screens simply for the sake of making changes.
+
+---
+
+# 6. CLEAN UP THE EXISTING PROJECT
+
+Perform a careful audit before deleting anything.
+
+Identify and fix:
+- Nonfunctional buttons.
+- Redundant controls and duplicate panels.
+- Placeholder content that is no longer needed.
+- Broken image or audio references.
+- Incorrect character-to-country mappings.
+- Incorrect backgrounds, music, or themes persisting between worlds.
+- Broken navigation and progress state.
+- CSS conflicts and hidden overlays blocking interaction.
+- Duplicate audio playback.
+- Animations continuing after leaving a world.
+- Event listeners, timers, or animation loops that are not cleaned up.
+- Console errors and avoidable asset-loading failures.
+- Mobile overflow, clipping, and unusable controls.
+
+Remove unused code and assets only when it is safe to do so. Do not remove essential features or change established puzzle rules merely to simplify the implementation.
+
+Avoid introducing unnecessary libraries.
+
+---
+
+# 7. PRESERVE AND VERIFY ALL THREE PUZZLES
+
+### India — The Lost Seal of the Indus Valley
+
+Preserve the Fish, Jar, Unicorn sequence puzzle and mathematical inscription.
+
+- Correct seal order: Fish → Jar → Unicorn.
+- Only a sequence satisfying the clues opens the door.
+- Incorrect attempts remain retryable.
+- Mathematical answer: 6.
+- The treasure reveal and completion screen must work.
+- Character dialogue must not bypass puzzle validation.
+
+### Japan — Zen Trail
+
+Preserve the 6 × 6 continuous rake-trail puzzle.
+
+- Only orthogonally adjacent cells may be visited.
+- Blocked stones cannot be traversed.
+- Cells cannot be revisited.
+- Victory requires every eligible sand cell to be visited.
+- Undo and restart must work.
+- The completion bell and character reaction must trigger once.
+
+### Egypt — Ankh Link
+
+Preserve the 5 × 5 symbol-connection puzzle.
+
+- All four matching symbol pairs must connect correctly.
+- Paths cannot cross or overlap.
+- Paths cannot pass through unrelated endpoints.
+- Full-board coverage must be validated.
+- Undo, clear-path, and restart must work.
+- The gold-restoration animation and character reaction must trigger only when all requirements are satisfied.
+
+Do not weaken the established rules to make the game easier to finish.
+
+---
+
+# 8. PERFORMANCE AND ACCESSIBILITY
+
+- Keep the game responsive and lightweight.
+- Avoid unnecessary rendering work and repeated asset initialization.
+- Stop inactive-world audio and animations.
+- Clean up audio nodes, timers, and event listeners.
+- Provide keyboard focus indicators and accessible labels.
+- Support touch input and appropriately sized controls.
+- Ensure characters resize correctly on narrow screens.
+- Respect reduced-motion preferences.
+- Ensure dialogue can be dismissed without disrupting puzzle input.
+- Make sound controls understandable and accessible.
+
+---
+
+# 9. FINAL QA CHECKLIST
+
+Test the actual project wherever the environment allows.
+
+### Characters
+1. All six characters render correctly or use a deliberate fallback.
+2. Each character has the correct appearance, name, personality, and country.
+3. The character-selection system works if present.
+4. India displays Amara or Vikram.
+5. Japan displays Yuki or Kenji.
+6. Egypt displays Kiya or Ahmose.
+7. The character remains visible during gameplay.
+8. Dialogue matches the active character and current event.
+9. Character animations do not block puzzle interaction.
+10. Missing character assets do not break the game.
+
+### Audio and UI
+11. Each world has its own appropriate music and sound effects.
+12. Switching worlds does not create overlapping music.
+13. Muting silences all audio.
+14. Music and sound-effect volume controls work independently.
+15. Character dialogue and panels are readable on mobile.
+16. No previous world's visual theme leaks into another world.
+
+### Gameplay
+17. All three puzzles retain their correct mechanics.
+18. Invalid moves are handled correctly.
+19. Undo and restart work.
+20. Each completion animation triggers only once.
+21. The game can be played from introduction to completion.
+22. All visible controls perform their intended actions.
+
+### Technical quality
+23. Check for console errors and failed asset references.
+24. Check responsive layouts and keyboard navigation.
+25. Confirm that inactive-world audio and animations stop correctly.
+
+If any test cannot be performed, clearly state that it remains unverified. Do not claim success based only on code inspection.
+
+---
+
+# 10. FINAL ACCEPTANCE CRITERIA
+
+The finished experience should feel like an immersive adventure with three distinctive companion-led worlds:
+
+- **India:** Amara or Vikram accompanies the player through an ancient archaeological mystery.
+- **Japan:** Yuki or Kenji accompanies the player through a peaceful, meditative garden puzzle.
+- **Egypt:** Kiya or Ahmose accompanies the player through a monumental temple puzzle.
+
+Characters must feel present and responsive. Music and sound effects must complement the gameplay. UI elements must match the country. The game must remain functional, accessible, and reliable.
+
+**Priority order:**
+
+1. Correctly integrate the six character designs from the uploaded Character Design Bible.
+2. Make each selected character visibly accompany the player.
+3. Improve world-specific music and sound effects.
+4. Polish the UI themes and transitions.
+5. Remove unnecessary or broken elements.
+6. Verify gameplay, responsiveness, and performance.
+
+Make all changes directly in the existing project. Do not stop after creating character cards or a design description.
+
+At the end, provide a concise report covering:
+- Characters integrated and how they appear in each world.
+- Character assets reused or created.
+- Audio improvements.
+- UI and cleanup changes.
+- Tests actually completed.
+- Any remaining limitations or missing assets.

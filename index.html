@@ -1,0 +1,4227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sacred Patterns - Ancient Civilizations Puzzle Adventure</title>
+    <meta name="description" content="A three-civilization puzzle adventure exploring the sacred geometry and archaeological secrets of Japan, India, and Egypt." />
+
+    <style>
+      /* ==========================================================================
+         SACRED PATTERNS - CORE DESIGN SYSTEM & TYPOGRAPHY
+         ========================================================================== */
+      :root {
+        --font-serif: "Cinzel", "Palatino", "Georgia", serif;
+        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        
+        /* Ancient Indus Valley Palette */
+        --indus-sandstone: #D8B88A;
+        --indus-ivory: #F3E6CB;
+        --indus-terracotta: #A95738;
+        --indus-clay: #733C2D;
+        --indus-teal: #527C78;
+        --indus-gold: #C7A15A;
+        --indus-dark: #35271E;
+
+        /* Japan Spring Zen Garden Palette */
+        --jp-sand-base: #f7f3e8;
+        --jp-sand-raked: #edd8b7;
+        --jp-sand-border: #d4bc94;
+        --jp-stone: #4b5563;
+        --jp-moss: #15803d;
+        --jp-vermilion: #e11d48;
+        --jp-sakura: #fbcfe8;
+        --jp-wood: #78350f;
+
+        /* Egypt Temple of Horus Palette */
+        --eg-stone: #f4e8cc;
+        --eg-gold: #f59e0b;
+        --eg-turquoise: #06b6d4;
+        --eg-emerald: #10b981;
+        --eg-ruby: #ec4899;
+        --eg-lapis: #2563eb;
+        --eg-sandstone: #b45309;
+        --eg-shadow: rgba(69, 39, 10, 0.25);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-sans);
+        min-height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #231b14;
+        color: #1e293b;
+      }
+
+      /* ==========================================================================
+         INDEPENDENT WORLD BACKDROP SYSTEM
+         Every country and menu has its own completely isolated backdrop layer.
+         Zero bleed-through between countries.
+         ========================================================================== */
+      #environment-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .backdrop-layer {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+      }
+
+      .backdrop-layer.active {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* 1. Neutral Antique Parchment Map (For Title, Character Select, World Map) */
+      #bg-parchment {
+        background-color: #f7eed8;
+        background-image: 
+          radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.45) 0%, transparent 65%),
+          linear-gradient(135deg, #ecdcc1 0%, #dfcaa7 50%, #d4bc94 100%);
+      }
+
+      /* 2. Japan: Zen Garden & Torii Shrine */
+      #bg-japan {
+        background-image: url('/images/japan_garden.jpg');
+        background-position: center 35%;
+      }
+
+      /* 3. India: The Lost Seal of the Indus Valley (Mohenjo-daro Chamber) */
+      #bg-india {
+        background-image: url('/images/indus_chamber.jpg');
+        background-position: center center;
+      }
+
+      /* 4. Egypt: Karnak & Temple of Horus Sanctuary */
+      #bg-egypt {
+        background-image: url('/images/egypt_ankh_temple.jpg');
+        background-position: center 35%;
+      }
+
+      /* Canvas for Ambient Particles (Sakura in Japan, Sunlight Dust in India, Sand in Egypt) */
+      #ambient-particles-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .ambient-lighting-filter {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.22) 100%);
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* ==========================================================================
+         CONTAINER & SCREEN MANAGEMENT
+         ========================================================================== */
+      #game-container {
+        position: relative;
+        z-index: 10;
+        width: 100%;
+        max-width: 960px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .game-screen {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0.96);
+      }
+
+      .game-screen.active {
+        opacity: 1;
+        pointer-events: auto;
+        transform: scale(1);
+        z-index: 10;
+      }
+
+      .game-screen.zoom-in {
+        transform: scale(1.25);
+        opacity: 0;
+      }
+
+      .game-screen.zoom-out {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+
+      /* Buttons */
+      .ancient-btn {
+        background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 40%, #fde68a 100%);
+        border: 2px solid #b45309;
+        color: #78350f;
+        font-family: var(--font-serif);
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.06em;
+        padding: 0.7rem 1.6rem;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(120, 53, 15, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        text-transform: uppercase;
+      }
+
+      .ancient-btn:hover {
+        background: linear-gradient(180deg, #ffffff 0%, #fef08a 60%, #fcd34d 100%);
+        box-shadow: 0 6px 18px rgba(180, 83, 9, 0.35);
+        transform: translateY(-2px);
+      }
+
+      .ancient-btn.secondary {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1.5px solid #cbd5e1;
+        color: #334155;
+        font-size: 0.85rem;
+        padding: 0.45rem 1rem;
+      }
+
+      .ancient-btn.secondary:hover {
+        background: #ffffff;
+        border-color: #b45309;
+        color: #78350f;
+      }
+
+      /* Indus Themed Specific Button */
+      .indus-btn {
+        background: linear-gradient(180deg, var(--indus-ivory) 0%, var(--indus-sandstone) 100%);
+        border: 2px solid var(--indus-terracotta);
+        color: var(--indus-dark);
+        font-family: var(--font-serif);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 0.65rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(115, 60, 45, 0.3);
+        transition: all 0.2s ease;
+      }
+
+      .indus-btn:hover {
+        background: linear-gradient(180deg, #fff 0%, var(--indus-ivory) 100%);
+        border-color: var(--indus-gold);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(199, 161, 90, 0.4);
+      }
+
+      /* Audio Controls Panel */
+      .audio-controls-wrap {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      #audio-toggle-btn {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1.5px solid #b45309;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #78350f;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(8px);
+        transition: all 0.2s ease;
+      }
+
+      #audio-toggle-btn:hover {
+        background: #ffffff;
+        transform: scale(1.08);
+      }
+
+      .audio-settings-drawer {
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(8px);
+        border: 1.5px solid #b45309;
+        border-radius: 10px;
+        padding: 0.6rem 0.85rem;
+        display: none;
+        flex-direction: column;
+        gap: 0.45rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+        position: absolute;
+        right: 0;
+        top: 50px;
+        width: 190px;
+        z-index: 60;
+      }
+
+      .audio-settings-drawer.open {
+        display: flex;
+      }
+
+      .volume-slider-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #78350f;
+      }
+
+      .volume-slider-row input[type="range"] {
+        width: 95px;
+        accent-color: #b45309;
+        cursor: pointer;
+      }
+
+      /* Companion Stage Presentation in Levels */
+      .level-play-area {
+        display: flex;
+        gap: 1.25rem;
+        align-items: flex-start;
+        justify-content: center;
+        width: 100%;
+        margin-top: 0.25rem;
+      }
+
+      @media (max-width: 768px) {
+        .level-play-area {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+
+      .companion-stage-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 150px;
+        max-width: 190px;
+        flex-shrink: 0;
+        position: relative;
+        background: rgba(255, 255, 255, 0.85);
+        border: 2px solid #b45309;
+        border-radius: 12px;
+        padding: 0.6rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      }
+
+      @media (max-width: 768px) {
+        .companion-stage-wrap {
+          flex-direction: row;
+          max-width: 100%;
+          width: 100%;
+          justify-content: center;
+          gap: 0.75rem;
+          margin-bottom: 0.5rem;
+        }
+      }
+
+      .companion-figure-box {
+        width: 120px;
+        height: 210px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        position: relative;
+        cursor: pointer;
+        animation: companionBreathe 4s ease-in-out infinite;
+        transition: transform 0.2s ease;
+      }
+
+      @media (max-width: 768px) {
+        .companion-figure-box {
+          width: 60px;
+          height: 100px;
+        }
+        .companion-figure-box svg {
+          max-height: 100px;
+        }
+      }
+
+      .companion-figure-box:hover {
+        transform: scale(1.04);
+      }
+
+      @keyframes companionBreathe {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+      }
+
+      .companion-badge-pill {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 4px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: 0.4rem;
+        width: 100%;
+      }
+
+      .companion-name {
+        font-family: var(--font-serif);
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: #78350f;
+      }
+
+      .companion-title {
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #059669;
+      }
+
+      .btn-companion-guidance {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 10px;
+        padding: 3px 8px;
+        font-size: 0.65rem;
+        color: #b45309;
+        font-weight: 700;
+        cursor: pointer;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        transition: all 0.2s;
+      }
+
+      .btn-companion-guidance:hover {
+        background: #fef08a;
+        transform: translateY(-1px);
+      }
+
+      .companion-speech-bubble {
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translate(-50%, -100%);
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(8px);
+        border: 2px solid #b45309;
+        border-radius: 10px;
+        padding: 0.6rem 0.8rem;
+        width: 220px;
+        box-shadow: 0 10px 25px rgba(67, 28, 6, 0.28);
+        font-size: 0.76rem;
+        line-height: 1.35;
+        color: #1e293b;
+        z-index: 45;
+        display: none;
+        cursor: pointer;
+      }
+
+      @media (max-width: 768px) {
+        .companion-speech-bubble {
+          position: static;
+          transform: none;
+          width: auto;
+          max-width: 280px;
+        }
+      }
+
+      .companion-speech-bubble.active {
+        display: block;
+        animation: popBubble 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .companion-speech-bubble::after {
+        content: "";
+        position: absolute;
+        bottom: -7px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 7px 7px 0;
+        border-style: solid;
+        border-color: #b45309 transparent transparent;
+      }
+
+      @media (max-width: 768px) {
+        .companion-speech-bubble::after {
+          display: none;
+        }
+      }
+
+      .speech-bubble-text {
+        font-style: italic;
+        font-weight: 600;
+        color: #334155;
+      }
+
+      .speech-bubble-dismiss {
+        font-size: 0.58rem;
+        color: #94a3b8;
+        text-align: right;
+        margin-top: 3px;
+      }
+
+      @keyframes popBubble {
+        from { opacity: 0; transform: translate(-50%, -85%) scale(0.9); }
+        to { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+      }
+
+      /* 6-Card Companion Select Screen Grid */
+      .char-grid-6 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.85rem;
+        width: 100%;
+        margin-bottom: 1.25rem;
+      }
+
+      @media (max-width: 820px) {
+        .char-grid-6 {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 540px) {
+        .char-grid-6 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .char-card-full {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .char-card-full:hover {
+        border-color: #b45309;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(180, 83, 9, 0.18);
+        background: #fffdf7;
+      }
+
+      .char-card-full.selected {
+        border-color: #b45309;
+        box-shadow: 0 0 0 2px #f59e0b, 0 6px 18px rgba(180, 83, 9, 0.2);
+        background: #fefce8;
+      }
+
+      .char-card-full.selected::after {
+        content: "ACTIVE COMPANION";
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        font-size: 0.58rem;
+        font-family: var(--font-serif);
+        font-weight: 700;
+        color: #b45309;
+        background: #fef3c7;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #fde68a;
+      }
+
+      .char-card-figure-preview {
+        height: 125px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.4rem;
+      }
+
+      .char-card-figure-preview svg {
+        max-height: 120px;
+        width: auto;
+        filter: drop-shadow(0 3px 5px rgba(0,0,0,0.12));
+      }
+
+      /* --------------------------------------------------------------------------
+         SCREEN 1: TITLE SCREEN
+         -------------------------------------------------------------------------- */
+      #screen-title {
+        text-align: center;
+      }
+
+      .title-card-box {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(12px);
+        border: 3px solid #b45309;
+        border-radius: 16px;
+        padding: 2.2rem 2.8rem;
+        box-shadow: 0 20px 45px rgba(67, 28, 6, 0.2);
+        max-width: 620px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .title-emblem {
+        width: 84px;
+        height: 84px;
+        margin-bottom: 1.25rem;
+        filter: drop-shadow(0 4px 10px rgba(180, 83, 9, 0.3));
+      }
+
+      .game-title {
+        font-family: var(--font-serif);
+        font-size: clamp(2.2rem, 5.5vw, 3.6rem);
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        background: linear-gradient(180deg, #92400e 0%, #b45309 60%, #78350f 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+      }
+
+      .game-subtitle {
+        color: #475569;
+        font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+        max-width: 500px;
+        margin-bottom: 1.8rem;
+        line-height: 1.5;
+        font-weight: 500;
+      }
+
+      .title-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.25rem;
+      }
+
+      .control-hints {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        font-size: 0.82rem;
+        color: #64748b;
+        margin-top: 0.6rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .key-pill {
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 0.15rem 0.45rem;
+        color: #1e293b;
+        font-family: monospace;
+        font-weight: 600;
+      }
+
+      /* --------------------------------------------------------------------------
+         SCREEN 2: CHOOSE YOUR GUIDE
+         -------------------------------------------------------------------------- */
+      #screen-characters {
+        justify-content: flex-start;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+        overflow-y: auto;
+      }
+
+      .char-card-box {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(12px);
+        border: 2px solid #b45309;
+        border-radius: 14px;
+        padding: 1.5rem 1.8rem;
+        box-shadow: 0 16px 40px rgba(67, 28, 6, 0.15);
+        width: 100%;
+        max-width: 780px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .char-header {
+        text-align: center;
+        margin-bottom: 1.25rem;
+      }
+
+      .char-header h2 {
+        font-family: var(--font-serif);
+        font-size: clamp(1.6rem, 4vw, 2.2rem);
+        color: #78350f;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .char-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+        max-width: 520px;
+        margin-top: 0.25rem;
+      }
+
+      .char-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.9rem;
+        width: 100%;
+        margin-bottom: 1.25rem;
+      }
+
+      @media (max-width: 620px) {
+        .char-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .char-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .char-card:hover:not(.locked) {
+        border-color: #b45309;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(180, 83, 9, 0.18);
+        background: #fffdf7;
+      }
+
+      .char-card.selected {
+        border-color: #b45309;
+        box-shadow: 0 0 0 2px #f59e0b, 0 6px 18px rgba(180, 83, 9, 0.2);
+        background: #fefce8;
+      }
+
+      .char-card.selected::after {
+        content: "SELECTED GUIDE";
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        font-size: 0.6rem;
+        font-family: var(--font-serif);
+        font-weight: 700;
+        color: #b45309;
+        background: #fef3c7;
+        padding: 2px 6px;
+        border-radius: 4px;
+        border: 1px solid #fde68a;
+      }
+
+      .char-card.locked {
+        opacity: 0.65;
+        cursor: not-allowed;
+        background: #f8fafc;
+      }
+
+      .char-avatar-container {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.7rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .char-info {
+        flex-grow: 1;
+        text-align: left;
+      }
+
+      .char-name-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.45rem;
+      }
+
+      .char-name {
+        font-family: var(--font-serif);
+        font-weight: 800;
+        font-size: 1.15rem;
+        color: #1e293b;
+      }
+
+      .char-role {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #b45309;
+        text-transform: uppercase;
+      }
+
+      .char-tagline {
+        font-size: 0.8rem;
+        color: #475569;
+        line-height: 1.35;
+        margin: 0.25rem 0;
+      }
+
+      .char-meta-tag {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #059669;
+      }
+
+      /* --------------------------------------------------------------------------
+         SCREEN 3: WORLD MAP
+         -------------------------------------------------------------------------- */
+      #screen-map {
+        justify-content: flex-start;
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        overflow-y: auto;
+      }
+
+      .map-card-box {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(12px);
+        border: 2px solid #b45309;
+        border-radius: 14px;
+        padding: 1.2rem 1.6rem;
+        box-shadow: 0 16px 40px rgba(67, 28, 6, 0.15);
+        width: 100%;
+        max-width: 860px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .map-header {
+        text-align: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .map-header h2 {
+        font-family: var(--font-serif);
+        font-size: clamp(1.4rem, 3.5vw, 2rem);
+        color: #78350f;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
+
+      .map-header p {
+        color: #64748b;
+        font-size: 0.88rem;
+      }
+
+      .map-guide-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 8px;
+        padding: 0.4rem 0.9rem;
+        margin-bottom: 0.8rem;
+        width: 100%;
+      }
+
+      .guide-chip-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        border: 1.5px solid #b45309;
+      }
+
+      .guide-chip-text {
+        font-size: 0.82rem;
+        color: #475569;
+      }
+
+      .guide-chip-text strong {
+        color: #78350f;
+        font-family: var(--font-serif);
+      }
+
+      .world-map-viewport {
+        position: relative;
+        width: 100%;
+        height: min(390px, 48vh);
+        background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 40%, #fef3c7 100%);
+        border: 2px solid #b45309;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        box-shadow: inset 0 0 20px rgba(180, 83, 9, 0.1);
+      }
+
+      .map-svg-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+
+      .map-route-line {
+        stroke-dasharray: 8 8;
+        animation: routeFlow 20s linear infinite;
+      }
+
+      @keyframes routeFlow {
+        from { stroke-dashoffset: 0; }
+        to { stroke-dashoffset: -200; }
+      }
+
+      .map-node {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.25s ease;
+        z-index: 5;
+      }
+
+      .map-node:hover:not(.locked) {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+
+      .map-node.locked {
+        cursor: not-allowed;
+        filter: grayscale(0.8) opacity(0.65);
+      }
+
+      .node-pin {
+        width: clamp(44px, 7vw, 56px);
+        height: clamp(44px, 7vw, 56px);
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #fffbeb, #fde68a);
+        border: 2px solid #b45309;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+        box-shadow: 0 6px 16px rgba(120, 53, 15, 0.25);
+        position: relative;
+      }
+
+      .map-node.unlocked .node-pin {
+        box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+        animation: pinPulse 2.4s ease-in-out infinite;
+      }
+
+      @keyframes pinPulse {
+        0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+        50% { box-shadow: 0 0 24px rgba(245, 158, 11, 0.8); }
+      }
+
+      .node-status-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #ffffff;
+        border: 1.5px solid #b45309;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+      }
+
+      .node-card {
+        margin-top: 5px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 3px 8px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        white-space: nowrap;
+      }
+
+      .node-card .country-name {
+        font-family: var(--font-serif);
+        font-size: clamp(0.75rem, 1.6vw, 0.85rem);
+        font-weight: 700;
+        color: #78350f;
+      }
+
+      .node-card .mechanic-name {
+        font-size: clamp(0.65rem, 1.3vw, 0.7rem);
+        color: #475569;
+        font-weight: 500;
+      }
+
+      .node-stars {
+        color: #f59e0b;
+        font-size: 0.75rem;
+        margin-top: 1px;
+      }
+
+      #map-guide-token {
+        position: absolute;
+        transform: translate(24px, -36px);
+        background: #ffffff;
+        border: 2px solid #b45309;
+        border-radius: 20px;
+        padding: 3px 8px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 4px 12px rgba(120, 53, 15, 0.2);
+        z-index: 12;
+        pointer-events: none;
+        transition: all 0.4s ease;
+        font-size: 0.72rem;
+        color: #78350f;
+        font-weight: 700;
+      }
+
+      /* --------------------------------------------------------------------------
+         SCREEN 4: JAPAN — ZEN TRAIL (6x6 KARESANSUI SAND RAKING)
+         -------------------------------------------------------------------------- */
+      #screen-japan-zen {
+        justify-content: space-between;
+        padding: 0.85rem;
+        max-width: 860px;
+      }
+
+      .level-panel-header {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.45rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .zen-board-wrapper {
+        position: relative;
+        background: radial-gradient(circle at 50% 50%, #fffdfa 0%, #fdf8eb 100%);
+        border: 4px solid #78350f;
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .zen-grid-canvas-container {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(6, clamp(42px, 8.5vw, 56px));
+        grid-template-rows: repeat(6, clamp(42px, 8.5vw, 56px));
+        gap: 4px;
+        padding: 8px;
+        background: #e8d7be;
+        border-radius: 10px;
+        border: 2px solid #b45309;
+      }
+
+      .zen-svg-overlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 15;
+      }
+
+      .zen-cell {
+        position: relative;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease, background-color 0.2s ease;
+        background: #faf6ee;
+        border: 1px solid #ebd9c0;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .zen-cell:hover:not(.stone):not(.raked) {
+        transform: scale(1.05);
+        border-color: #b45309;
+        background: #fffdf5;
+      }
+
+      .zen-cell.raked {
+        background: radial-gradient(circle, #f5e4c8 0%, #e8d0af 100%);
+        border: 1px solid #c9a777;
+        box-shadow: inset 0 2px 4px rgba(120, 53, 15, 0.15);
+      }
+
+      .zen-cell.raked::before {
+        content: "";
+        position: absolute;
+        inset: 6px;
+        border-radius: 50%;
+        border: 1.5px dashed rgba(180, 83, 9, 0.4);
+      }
+
+      .zen-cell.stone {
+        cursor: not-allowed;
+        background: linear-gradient(135deg, #64748b 0%, #334155 100%);
+        border: 2px solid #1e293b;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+      }
+
+      .zen-cell.stone::after {
+        content: "🪨";
+        font-size: 1.6rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+      }
+
+      .zen-cell.current-head {
+        box-shadow: 0 0 0 3px #e11d48, 0 0 16px rgba(225, 29, 72, 0.6) !important;
+        animation: pulseHead 1.6s ease-in-out infinite;
+      }
+
+      @keyframes pulseHead {
+        0%, 100% { box-shadow: 0 0 0 2px #e11d48, 0 0 12px rgba(225, 29, 72, 0.5); }
+        50% { box-shadow: 0 0 0 4px #e11d48, 0 0 20px rgba(225, 29, 72, 0.85); }
+      }
+
+      .zen-progress-bar-wrap {
+        width: 100%;
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
+        margin-top: 0.75rem;
+        border: 1px solid #cbd5e1;
+      }
+
+      .zen-progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        width: 0%;
+        transition: width 0.25s ease;
+      }
+
+      .zen-victory-banner {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 253, 245, 0.94);
+        backdrop-filter: blur(4px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        z-index: 30;
+        animation: fadeIn 0.4s ease;
+      }
+
+      .zen-victory-banner.active {
+        display: flex;
+      }
+
+      /* --------------------------------------------------------------------------
+         SCREEN 5: INDIA — THE LOST SEAL OF THE INDUS VALLEY
+         -------------------------------------------------------------------------- */
+      #screen-india-chamber {
+        justify-content: flex-start;
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+        overflow-y: auto;
+      }
+
+      .indus-chamber-container {
+        background: rgba(243, 230, 203, 0.94);
+        backdrop-filter: blur(10px);
+        border: 3px solid var(--indus-terracotta);
+        border-radius: 14px;
+        padding: 1.4rem 1.8rem;
+        box-shadow: 0 20px 45px rgba(53, 39, 30, 0.35);
+        max-width: 820px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+      }
+
+      .indus-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid var(--indus-sandstone);
+        padding-bottom: 0.75rem;
+      }
+
+      .indus-title-group h2 {
+        font-family: var(--font-serif);
+        font-size: clamp(1.3rem, 3.2vw, 1.85rem);
+        color: var(--indus-clay);
+        text-transform: uppercase;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+      }
+
+      .indus-title-group p {
+        font-size: 0.85rem;
+        color: var(--indus-teal);
+        font-weight: 700;
+      }
+
+      .indus-stage-box {
+        background: #fffdf8;
+        border: 2px solid var(--indus-sandstone);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+      }
+
+      .artifacts-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+      }
+
+      @media (max-width: 600px) {
+        .artifacts-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .artifact-card {
+        background: var(--indus-ivory);
+        border: 2px solid var(--indus-sandstone);
+        border-radius: 8px;
+        padding: 0.75rem 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .artifact-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--indus-gold);
+        box-shadow: 0 6px 14px rgba(115, 60, 45, 0.2);
+      }
+
+      .artifact-card.inspected {
+        border-color: var(--indus-teal);
+        background: #f0fdf4;
+      }
+
+      .artifact-card.inspected::after {
+        content: "✓ EXAMINED";
+        font-size: 0.58rem;
+        font-weight: 800;
+        color: var(--indus-teal);
+        margin-top: 2px;
+      }
+
+      .artifact-icon {
+        font-size: 2rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .artifact-name {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--indus-clay);
+        text-align: center;
+      }
+
+      .seal-puzzle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .clues-banner {
+        background: #fbf5ea;
+        border-left: 3px solid var(--indus-gold);
+        padding: 0.6rem 0.9rem;
+        font-size: 0.8rem;
+        color: var(--indus-dark);
+        line-height: 1.45;
+        border-radius: 0 6px 6px 0;
+        width: 100%;
+      }
+
+      .clues-banner ul {
+        margin-left: 1.25rem;
+        margin-top: 0.35rem;
+      }
+
+      .door-slots-frame {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        background: #2b1f18;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        border: 3px solid var(--indus-terracotta);
+        box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6);
+      }
+
+      .seal-slot {
+        width: 76px;
+        height: 76px;
+        background: #3e2e25;
+        border: 2px dashed var(--indus-sandstone);
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+      }
+
+      .seal-slot:hover {
+        border-color: var(--indus-gold);
+        background: #4a382d;
+      }
+
+      .seal-slot-label {
+        position: absolute;
+        top: 2px;
+        font-size: 0.62rem;
+        color: var(--indus-sandstone);
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .pedestal-seals-tray {
+        display: flex;
+        gap: 1.25rem;
+        justify-content: center;
+      }
+
+      .seal-token {
+        background: var(--indus-ivory);
+        border: 2px solid var(--indus-terracotta);
+        border-radius: 8px;
+        padding: 0.5rem 0.9rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(115, 60, 45, 0.25);
+        transition: all 0.2s ease;
+      }
+
+      .seal-token:hover {
+        transform: scale(1.06);
+        border-color: var(--indus-gold);
+        box-shadow: 0 6px 16px rgba(199, 161, 90, 0.4);
+      }
+
+      .seal-token.selected {
+        border-color: var(--indus-teal);
+        box-shadow: 0 0 0 3px var(--indus-teal);
+        transform: scale(1.08);
+      }
+
+      .seal-token-icon {
+        font-size: 1.8rem;
+      }
+
+      .seal-token-name {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: var(--indus-clay);
+        text-transform: uppercase;
+      }
+
+      /* Stage D: Math Tablet */
+      .math-tablet-box {
+        background: #fdf6e7;
+        border: 2px solid var(--indus-gold);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-top: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      .math-riddle-quote {
+        font-family: var(--font-serif);
+        font-size: 1rem;
+        color: var(--indus-clay);
+        font-weight: 700;
+        text-align: center;
+        font-style: italic;
+      }
+
+      .math-input-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .math-input-field {
+        width: 90px;
+        padding: 0.45rem 0.6rem;
+        border: 2px solid var(--indus-terracotta);
+        border-radius: 6px;
+        font-size: 1.1rem;
+        text-align: center;
+        font-family: monospace;
+        font-weight: 700;
+      }
+
+      /* --------------------------------------------------------------------------
+         SCREEN 6: EGYPT — ANKH LINK (5x5 HIEROGLYPHIC CONDUIT PATHS)
+         -------------------------------------------------------------------------- */
+      #screen-egypt-ankh {
+        justify-content: space-between;
+        padding: 0.85rem;
+        max-width: 860px;
+      }
+
+      .ankh-board-wrapper {
+        position: relative;
+        background: radial-gradient(circle at 50% 50%, #fffdf8 0%, #fef3c7 100%);
+        border: 4px solid #b45309;
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .ankh-grid-container {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(5, clamp(50px, 10vw, 66px));
+        grid-template-rows: repeat(5, clamp(50px, 10vw, 66px));
+        gap: 5px;
+        padding: 10px;
+        background: #ecdcc1;
+        border-radius: 10px;
+        border: 2px solid #b45309;
+      }
+
+      .ankh-svg-overlay {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 15;
+      }
+
+      .ankh-cell {
+        position: relative;
+        border-radius: 7px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease, background-color 0.2s ease;
+        background: #fffdf5;
+        border: 1.5px solid #d4bc94;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .ankh-cell:hover {
+        transform: scale(1.04);
+        border-color: #b45309;
+      }
+
+      .ankh-cell.endpoint {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      }
+
+      .ankh-cell.endpoint .glyph-icon {
+        font-size: clamp(1.7rem, 3.5vw, 2.2rem);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        transition: transform 0.2s ease;
+      }
+
+      .ankh-cell.endpoint.connected {
+        animation: glowPulse 2s infinite ease-in-out;
+      }
+
+      @keyframes glowPulse {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px currentColor); }
+        50% { transform: scale(1.08); filter: drop-shadow(0 0 14px currentColor); }
+      }
+
+      .ankh-cell.in-path {
+        background-color: rgba(254, 243, 199, 0.7);
+      }
+
+      .ankh-legend-bar {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 0.75rem;
+      }
+
+      .ankh-legend-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 16px;
+        padding: 3px 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .ankh-legend-chip.active {
+        box-shadow: 0 0 0 2px currentColor;
+      }
+
+      .ankh-legend-chip.completed {
+        background: #f0fdf4;
+        border-color: #10b981;
+      }
+
+      .ankh-victory-banner {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 253, 245, 0.94);
+        backdrop-filter: blur(4px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        z-index: 30;
+        animation: fadeIn 0.4s ease;
+      }
+
+      .ankh-victory-banner.active {
+        display: flex;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+
+      /* --------------------------------------------------------------------------
+         MODALS & OVERLAYS
+         -------------------------------------------------------------------------- */
+      .indus-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(53, 39, 30, 0.65);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+
+      .indus-modal-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .indus-modal-card {
+        background: var(--indus-ivory);
+        border: 3px solid var(--indus-terracotta);
+        border-radius: 12px;
+        padding: 1.5rem 2rem;
+        max-width: 480px;
+        width: 90%;
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      /* Standard Level Complete Modal */
+      #level-complete-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(6px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      #level-complete-modal.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .modal-card {
+        background: linear-gradient(180deg, #ffffff 0%, #fffbeb 100%);
+        border: 3px solid #b45309;
+        border-radius: 14px;
+        padding: 2rem 2.5rem;
+        text-align: center;
+        max-width: 460px;
+        width: 90%;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-title { font-family: var(--font-serif); font-size: 2rem; color: #78350f; font-weight: 800; }
+      .modal-subtitle { color: #475569; font-size: 0.95rem; margin-bottom: 1.25rem; font-weight: 600; }
+      .modal-stars { font-size: 2.2rem; color: #f59e0b; margin-bottom: 1.25rem; }
+      .modal-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.8rem; margin-bottom: 1.5rem; }
+      .modal-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stat-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        color: #64748b;
+        font-weight: 700;
+      }
+
+      .stat-value {
+        font-family: monospace;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+
+      .objective-banner {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.94);
+        border-left: 4px solid #b45309;
+        border-radius: 0 8px 8px 0;
+        padding: 0.45rem 0.95rem;
+        font-size: 0.82rem;
+        color: #1e293b;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .dpad-container {
+        display: grid;
+        grid-template-columns: repeat(3, 40px);
+        grid-template-rows: repeat(2, 36px);
+        gap: 3px;
+      }
+
+      .dpad-btn {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 1rem;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .dpad-btn.up { grid-column: 2; grid-row: 1; }
+      .dpad-btn.left { grid-column: 1; grid-row: 2; }
+      .dpad-btn.down { grid-column: 2; grid-row: 2; }
+      .dpad-btn.right { grid-column: 3; grid-row: 2; }
+
+      .puzzle-controls-bar {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 0.6rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ==========================================================================
+         ISOLATED MULTI-WORLD BACKDROP SYSTEM
+         Zero bleed-through between countries.
+         ========================================================================== -->
+    <div id="environment-backdrop">
+      <div id="bg-parchment" class="backdrop-layer active"></div>
+      <div id="bg-japan" class="backdrop-layer"></div>
+      <div id="bg-india" class="backdrop-layer"></div>
+      <div id="bg-egypt" class="backdrop-layer"></div>
+      <div class="ambient-lighting-filter"></div>
+      <canvas id="ambient-particles-canvas"></canvas>
+    </div>
+
+    <div id="game-container">
+      <!-- Centralized Audio Controller -->
+      <div class="audio-controls-wrap">
+        <button id="audio-toggle-btn" aria-label="Toggle Audio" title="Sound Effects & Ambient (M)">
+          🔊
+        </button>
+        <button id="audio-settings-btn" class="ancient-btn secondary" style="padding: 0.35rem 0.6rem; font-size: 0.85rem; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;" title="Audio Settings">
+          ⚙️
+        </button>
+        <div id="audio-settings-drawer" class="audio-settings-drawer">
+          <div class="volume-slider-row">
+            <span>Music</span>
+            <input type="range" id="slider-music-vol" min="0" max="100" value="50">
+          </div>
+          <div class="volume-slider-row">
+            <span>SFX</span>
+            <input type="range" id="slider-sfx-vol" min="0" max="100" value="80">
+          </div>
+          <button id="btn-audio-mute-toggle" class="ancient-btn secondary" style="padding: 0.3rem 0.5rem; font-size: 0.72rem; margin-top: 2px;">
+            Mute All Audio
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================================
+           SCREEN 1: TITLE SCREEN
+           ======================================================================== -->
+      <section id="screen-title" class="game-screen active">
+        <div class="title-card-box">
+          <svg class="title-emblem" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="46" stroke="#b45309" stroke-width="2.5" stroke-dasharray="4 2"/>
+            <circle cx="50" cy="50" r="38" stroke="#d97706" stroke-width="2"/>
+            <path d="M50 16 L84 50 L50 84 L16 50 Z" stroke="#b45309" stroke-width="2" fill="rgba(245, 158, 11, 0.15)"/>
+            <circle cx="50" cy="50" r="10" fill="#b45309"/>
+            <circle cx="50" cy="50" r="4" fill="#fef3c7"/>
+          </svg>
+
+          <h1 class="game-title">Sacred Patterns</h1>
+          <p class="game-subtitle">
+            Uncover the sacred geometry of Kyoto's Zen Trail, the lost seal of the Indus Valley, and Egypt's Ankh Link.
+          </p>
+
+          <div class="title-actions">
+            <button id="btn-start-game" class="ancient-btn">
+              <span>Begin Expedition</span>
+              <span>➔</span>
+            </button>
+            
+            <div class="control-hints">
+              <span>Move: <span class="key-pill">WASD</span> or <span class="key-pill">Arrows</span></span>
+              <span>Undo: <span class="key-pill">U</span></span>
+              <span>Reset: <span class="key-pill">R</span></span>
+              <span>Map: <span class="key-pill">Esc</span></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================
+           SCREEN 2: CHOOSE YOUR COMPANION (6 HUMAN CHARACTERS)
+           ======================================================================== -->
+      <section id="screen-characters" class="game-screen">
+        <div class="char-card-box" style="max-width: 860px;">
+          <header class="char-header">
+            <h2>Choose Your Companions</h2>
+            <p>Select your active humanoid guide for each civilization. Each companion provides unique philosophical guidance and tactical hints.</p>
+          </header>
+
+          <div class="char-grid-6" id="char-selection-container">
+            <!-- India: Amara -->
+            <div class="char-card-full selected" data-char="amara" data-country="india" id="card-amara">
+              <div class="char-card-figure-preview" id="preview-amara"></div>
+              <div class="char-name-row">
+                <span class="char-name">Amara</span>
+              </div>
+              <span class="char-role">Sacred Altar Keeper</span>
+              <p class="char-tagline" style="font-size: 0.72rem; color: #475569; margin: 0.2rem 0;">Ochre & indigo robes, sacred measuring cord, and offering bowl.</p>
+              <div class="char-meta-tag"><span>🇮🇳 India · Mohenjo-daro</span></div>
+            </div>
+
+            <!-- India: Vikram -->
+            <div class="char-card-full" data-char="vikram" data-country="india" id="card-vikram">
+              <div class="char-card-figure-preview" id="preview-vikram"></div>
+              <div class="char-name-row">
+                <span class="char-name">Vikram</span>
+              </div>
+              <span class="char-role">Stepwell Architect</span>
+              <p class="char-tagline" style="font-size: 0.72rem; color: #475569; margin: 0.2rem 0;">Cream kurta, terracotta dhoti, folding rule & emerald turban.</p>
+              <div class="char-meta-tag"><span>🇮🇳 India · Stepwell Secrets</span></div>
+            </div>
+
+            <!-- Japan: Yuki -->
+            <div class="char-card-full selected" data-char="yuki" data-country="japan" id="card-yuki">
+              <div class="char-card-figure-preview" id="preview-yuki"></div>
+              <div class="char-name-row">
+                <span class="char-name">Yuki</span>
+              </div>
+              <span class="char-role">Shrine Oracle</span>
+              <p class="char-tagline" style="font-size: 0.72rem; color: #475569; margin: 0.2rem 0;">White haori, red hakama, ritual gohei wand & silver bell.</p>
+              <div class="char-meta-tag"><span>🇯🇵 Japan · Zen Karesansui</span></div>
+            </div>
+
+            <!-- Japan: Kenji -->
+            <div class="char-card-full" data-char="kenji" data-country="japan" id="card-kenji">
+              <div class="char-card-figure-preview" id="preview-kenji"></div>
+              <div class="char-name-row">
+                <span class="char-name">Kenji</span>
+              </div>
+              <span class="char-role">Tatami Master</span>
+              <p class="char-tagline" style="font-size: 0.72rem; color: #475569; margin: 0.2rem 0;">Deep blue hakama, pale indigo haori & wooden shaku rule.</p>
+              <div class="char-meta-tag"><span>🇯🇵 Japan · Shoji Discipline</span></div>
+            </div>
+
+            <!-- Egypt: Kiya -->
+            <div class="char-card-full selected" data-char="kiya" data-country="egypt" id="card-kiya">
+              <div class="char-card-figure-preview" id="preview-kiya"></div>
+              <div class="char-name-row">
+                <span class="char-name">Kiya</span>
+              </div>
+              <span class="char-role">Horizon Watcher</span>
+              <p class="char-tagline" style="font-size: 0.72rem; color: #475569; margin: 0.2rem 0;">Lapis linen gown, gold-beaded cap, wesekh collar & wax tablet.</p>
+              <div class="char-meta-tag"><span>🇪🇬 Egypt · Temple Alignments</span></div>
+            </div>
+
+            <!-- Egypt: Ahmose -->
+            <div class="char-card-full" data-char="ahmose" data-country="egypt" id="card-ahmose">
+              <div class="char-card-figure-preview" id="preview-ahmose"></div>
+              <div class="char-name-row">
+                <span class="char-name">Ahmose</span>
+              </div>
+              <span class="char-role">Lotus Keeper</span>
+              <p class="char-tagline" style="font-size: 0.72rem; color: #475569; margin: 0.2rem 0;">Sun-tanned build, white linen kilt, lotus sash & golden ankh.</p>
+              <div class="char-meta-tag"><span>🇪🇬 Egypt · Nile Sanctuary</span></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="btn-char-confirm-expedition" class="ancient-btn">
+              <span>Enter World Map with Chosen Guides ➔</span>
+            </button>
+            <button id="btn-char-back-title" class="ancient-btn secondary">
+              <span>⤶ Back to Title</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================
+           SCREEN 3: WORLD MAP
+           ======================================================================== -->
+      <section id="screen-map" class="game-screen">
+        <div class="map-card-box">
+          <header class="map-header">
+            <h2>Sacred World Map</h2>
+            <p>Select an unlocked realm to solve its ancestral puzzle pattern</p>
+          </header>
+
+          <div class="map-guide-bar">
+            <div class="guide-chip-avatar" id="map-chip-avatar">🤍</div>
+            <div class="guide-chip-text">
+              Active Guide: <strong id="map-chip-name">Yuki</strong> (<span id="map-chip-role">Shrine Maiden</span>)
+            </div>
+            <button id="btn-map-change-guide" class="ancient-btn secondary" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; margin-left: auto;">
+              Change Guide
+            </button>
+          </div>
+
+          <div class="world-map-viewport" id="map-viewport">
+            <svg class="map-svg-canvas" viewBox="0 0 1000 600" preserveAspectRatio="none">
+              <path d="M 80,180 Q 200,100 320,160 T 520,180 Q 640,240 740,220 T 920,160" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="32" stroke-linecap="round"/>
+              <path d="M 160,360 Q 300,300 420,380 T 640,360 Q 780,440 920,320" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="38" stroke-linecap="round"/>
+
+              <path id="route-path-1" class="map-route-line" d="M 780,200 C 670,190 610,340 500,380" fill="none" stroke="#ea580c" stroke-width="4.5" stroke-opacity="0.9"/>
+              <path id="route-path-2" class="map-route-line" d="M 500,380 C 380,390 320,270 220,270" fill="none" stroke="#94a3b8" stroke-width="3" stroke-opacity="0.6"/>
+            </svg>
+
+            <div id="map-guide-token">
+              <span id="guide-token-emoji">🤍</span>
+              <span id="guide-token-name">Yuki</span>
+            </div>
+
+            <!-- Node 1: Japan -->
+            <div class="map-node unlocked" id="map-node-1" style="left: 78%; top: 33%;" data-level="1">
+              <div class="node-pin"><span>⛩️</span><div class="node-status-badge" id="badge-level-1">1</div></div>
+              <div class="node-card">
+                <div class="country-name">Japan</div>
+                <div class="mechanic-name">Zen Trail: Karesansui</div>
+                <div class="node-stars" id="stars-level-1">☆☆☆</div>
+              </div>
+            </div>
+
+            <!-- Node 2: India -->
+            <div class="map-node locked" id="map-node-2" style="left: 50%; top: 63%;" data-level="2">
+              <div class="node-pin"><span>🦏</span><div class="node-status-badge" id="badge-level-2">🔒</div></div>
+              <div class="node-card">
+                <div class="country-name">India</div>
+                <div class="mechanic-name">Lost Seal of Indus</div>
+                <div class="node-stars" id="stars-level-2">☆☆☆</div>
+              </div>
+            </div>
+
+            <!-- Node 3: Egypt -->
+            <div class="map-node locked" id="map-node-3" style="left: 22%; top: 45%;" data-level="3">
+              <div class="node-pin"><span>🔺</span><div class="node-status-badge" id="badge-level-3">🔒</div></div>
+              <div class="node-card">
+                <div class="country-name">Egypt</div>
+                <div class="mechanic-name">Ankh Link: Temple</div>
+                <div class="node-stars" id="stars-level-3">☆☆☆</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="map-actions-row">
+            <button id="btn-back-to-title" class="ancient-btn secondary">
+              <span>⤶ Guides & Title</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================
+           SCREEN 4: JAPAN — ZEN TRAIL (LEVEL 1)
+           Continuous-path sand raking on 6x6 Karesansui garden with 4 stones
+           ======================================================================== -->
+      <section id="screen-japan-zen" class="game-screen">
+        <header class="level-panel-header">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <button id="btn-zen-back-map" class="ancient-btn secondary" title="World Map (Esc)">
+              <span>🗺️ Map</span>
+            </button>
+            <div style="font-size: 1.8rem;">⛩️</div>
+            <div>
+              <h3 style="font-family: var(--font-serif); font-size: 1.25rem; color: #78350f; font-weight: 800;">
+                Zen Trail: Kyoto Shrine
+              </h3>
+              <p style="font-size: 0.78rem; color: #475569; font-weight: 600;">
+                Continuous Sand Raking · Visit all 32 sand cells in one unbroken path
+              </p>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.95); border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0.35rem 0.9rem;">
+            <div class="stat-item">
+              <span class="stat-label">Raked Sand</span>
+              <span class="stat-value" id="zen-progress-text">1 / 32</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Time</span>
+              <span class="stat-value" id="zen-timer">00:00</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="objective-banner">
+          <span>Rake every grain of sand without crossing your path or stepping on stones.</span>
+          <span id="zen-goal-pill" style="font-weight: 700; color: #059669;">Target: 32 / 32</span>
+        </div>
+
+        <div class="level-play-area">
+          <!-- Japan Companion Sidebar -->
+          <div class="companion-stage-wrap" id="zen-companion-wrap">
+            <div class="companion-speech-bubble" id="zen-speech-bubble">
+              <div class="speech-bubble-text" id="zen-dialogue-text">"Let every line flow without breaking. The garden will reveal its balance."</div>
+              <div class="speech-bubble-dismiss">tap to dismiss</div>
+            </div>
+            <div class="companion-figure-box" id="zen-companion-figure" title="Click for guidance"></div>
+            <div class="companion-badge-pill">
+              <span class="companion-name" id="zen-companion-name">Yuki</span>
+              <span class="companion-title" id="zen-companion-title">Shrine Oracle</span>
+              <button class="btn-companion-guidance" id="btn-zen-ask-companion">
+                <span>💬 Guidance</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="zen-board-wrapper">
+            <!-- Triumph Sequence Banner -->
+            <div id="zen-victory-banner" class="zen-victory-banner">
+              <span style="font-size: 2.8rem; margin-bottom: 0.5rem;">🌸 🔔 ✨</span>
+              <h2 style="font-family: var(--font-serif); color: #78350f; font-size: 1.6rem; margin-bottom: 0.4rem;">
+                THE GARDEN IS AT PEACE
+              </h2>
+              <p style="font-size: 0.9rem; color: #059669; font-weight: 700;">
+                All 32 sand spaces raked in pure meditative harmony
+              </p>
+            </div>
+
+            <!-- 6x6 Garden Grid Canvas -->
+            <div class="zen-grid-canvas-container" id="zen-grid">
+              <svg class="zen-svg-overlay" id="zen-svg"></svg>
+              <!-- Cells generated dynamically -->
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="zen-progress-bar-wrap">
+              <div class="zen-progress-bar-fill" id="zen-progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="puzzle-controls-bar">
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="btn-zen-undo" class="ancient-btn secondary" title="Undo Last Step (U)">
+              <span>↩ Undo</span>
+            </button>
+            <button id="btn-zen-reset" class="ancient-btn secondary" title="Restart Raking (R)">
+              <span>🔄 Clear Sand</span>
+            </button>
+          </div>
+
+          <div class="dpad-container">
+            <button class="dpad-btn up" data-dir="up" aria-label="Up">▲</button>
+            <button class="dpad-btn left" data-dir="left" aria-label="Left">◀</button>
+            <button class="dpad-btn down" data-dir="down" aria-label="Down">▼</button>
+            <button class="dpad-btn right" data-dir="right" aria-label="Right">▶</button>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ========================================================================
+           SCREEN 5: INDIA — THE LOST SEAL OF THE INDUS VALLEY (LEVEL 2)
+           The Sealed Chamber of Mohenjo-daro
+           ======================================================================== -->
+      <section id="screen-india-chamber" class="game-screen">
+        <div class="indus-chamber-container">
+          <header class="indus-header">
+            <div class="indus-title-group">
+              <h2>The Lost Seal of the Indus Valley</h2>
+              <p>The Sealed Chamber of Mohenjo-daro · "Every symbol hides a secret."</p>
+            </div>
+            <button id="btn-indus-back-map" class="indus-btn" style="padding: 0.35rem 0.8rem; font-size: 0.78rem;">
+              🗺️ Map
+            </button>
+          </header>
+
+          <!-- Stage A: Sunrise Opening Narration -->
+          <div id="indus-stage-opening" class="indus-stage-box">
+            <p class="indus-intro-text" style="font-size: 0.95rem; line-height: 1.6; color: var(--indus-dark); margin-bottom: 1rem;">
+              <strong>Dawn breaks over the baked-brick mounds of Mohenjo-daro.</strong> 
+              Sealed for over four millennia, an inner sanctuary of the ancient Indus civilization has been unearthed. 
+              Three sacred steatite seals and a mathematical riddle bar the way to the treasury.
+            </p>
+            <div style="display: flex; gap: 0.75rem;">
+              <button id="btn-indus-enter" class="indus-btn">
+                <span>ENTER THE CHAMBER ➔</span>
+              </button>
+              <button id="btn-indus-skip" class="ancient-btn secondary">
+                <span>SKIP INTRO</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Interactive Chamber Area (Stages B, C, D, E) -->
+          <div id="indus-main-chamber" style="display: none; flex-direction: column; gap: 1rem;">
+            
+            <!-- India Companion Guide Presence -->
+            <div style="display: flex; gap: 1rem; align-items: center; background: rgba(255, 255, 255, 0.9); border: 2px solid var(--indus-terracotta); border-radius: 12px; padding: 0.75rem 1rem; position: relative;">
+              <div class="companion-speech-bubble" id="indus-speech-bubble">
+                <div class="speech-bubble-text" id="indus-dialogue-text">"Every symbol has its place. Let us discover what these three were meant to reveal."</div>
+                <div class="speech-bubble-dismiss">tap to dismiss</div>
+              </div>
+              <div class="companion-figure-box" id="indus-companion-figure" style="width: 80px; height: 130px; cursor: pointer;" title="Click for advice"></div>
+              <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <div style="display: flex; align-items: baseline; gap: 0.5rem;">
+                  <span class="companion-name" id="indus-companion-name" style="font-size: 1rem; color: var(--indus-clay);">Amara</span>
+                  <span class="companion-title" id="indus-companion-title">Sacred Altar Keeper</span>
+                </div>
+                <p id="indus-companion-quote" style="font-size: 0.8rem; font-style: italic; color: #475569; margin: 0.25rem 0;">"Every symbol hides a secret waiting to be understood."</p>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                  <button class="btn-companion-guidance" id="btn-indus-ask-companion">
+                    <span>💬 Guidance</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Stage B: Artifact Hotspots / Inspection -->
+            <div class="indus-stage-box">
+              <span style="font-size: 0.75rem; font-weight: 800; color: var(--indus-clay); text-transform: uppercase;">
+                Archaeological Inspection (Click to Examine Artifacts)
+              </span>
+              <div class="artifacts-grid">
+                <div class="artifact-card" data-artifact="jar">
+                  <div class="artifact-icon">🏺</div>
+                  <div class="artifact-name">Storage Jar</div>
+                </div>
+                <div class="artifact-card" data-artifact="seal">
+                  <div class="artifact-icon">🪨</div>
+                  <div class="artifact-name">Broken Seal</div>
+                </div>
+                <div class="artifact-card" data-artifact="wall">
+                  <div class="artifact-icon">🧱</div>
+                  <div class="artifact-name">Wall Inscription</div>
+                </div>
+                <div class="artifact-card" data-artifact="tool">
+                  <div class="artifact-icon">🔧</div>
+                  <div class="artifact-name">Bronze Tool</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stage C: Three-Seal Stone Mechanism Puzzle -->
+            <div class="indus-stage-box seal-puzzle-container">
+              <div class="clues-banner">
+                <strong>Ancient Door Clues:</strong>
+                <ul>
+                  <li>1. The Fish stands immediately before the Jar.</li>
+                  <li>2. The Unicorn does not stand first.</li>
+                  <li>3. The Jar occupies the middle position.</li>
+                </ul>
+              </div>
+
+              <!-- Stone Door Slots (3 Positions) -->
+              <div style="text-align: center; font-size: 0.8rem; font-weight: 700; color: var(--indus-clay);">
+                Monumental Carved Stone Door (Slots 1, 2, 3)
+              </div>
+              <div class="door-slots-frame">
+                <div class="seal-slot" data-slot="0" id="slot-0">
+                  <span class="seal-slot-label">Slot 1</span>
+                </div>
+                <div class="seal-slot" data-slot="1" id="slot-1">
+                  <span class="seal-slot-label">Slot 2</span>
+                </div>
+                <div class="seal-slot" data-slot="2" id="slot-2">
+                  <span class="seal-slot-label">Slot 3</span>
+                </div>
+              </div>
+
+              <!-- Central Pedestal: Available Steatite Seals -->
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--indus-dark);">
+                Central Stone Pedestal (Click a seal, then click a slot to place):
+              </div>
+              <div class="pedestal-seals-tray" id="pedestal-tray">
+                <div class="seal-token" data-seal="unicorn" id="seal-unicorn">
+                  <span class="seal-token-icon">🦏</span>
+                  <span class="seal-token-name">Unicorn</span>
+                </div>
+                <div class="seal-token" data-seal="fish" id="seal-fish">
+                  <span class="seal-token-icon">🐟</span>
+                  <span class="seal-token-name">Fish</span>
+                </div>
+                <div class="seal-token" data-seal="jar" id="seal-jar">
+                  <span class="seal-token-icon">🏺</span>
+                  <span class="seal-token-name">Jar</span>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 0.75rem; width: 100%; justify-content: center;">
+                <button id="btn-indus-check-seals" class="indus-btn">
+                  <span>Activate Stone Mechanism</span>
+                </button>
+                <button id="btn-indus-reset-seals" class="ancient-btn secondary">
+                  <span>Reset Seals</span>
+                </button>
+              </div>
+
+              <div id="seal-feedback-msg" style="font-size: 0.85rem; font-weight: 700; text-align: center; min-height: 1.2rem;"></div>
+            </div>
+
+            <!-- Stage D: Mathematical Inscription Tablet (Revealed after door opens) -->
+            <div id="indus-stage-math" class="math-tablet-box" style="display: none;">
+              <span style="font-size: 0.8rem; font-weight: 800; color: var(--indus-teal); text-transform: uppercase;">
+                Inner Sanctum Tablet Unlocked!
+              </span>
+              <p class="math-riddle-quote">
+                "I am a number. Multiply me by four, then add four. The answer is twenty-eight. What number am I?"
+              </p>
+              
+              <div class="math-input-row">
+                <input type="text" id="indus-math-input" class="math-input-field" placeholder="?" maxlength="4" />
+                <button id="btn-indus-submit-math" class="indus-btn" style="padding: 0.45rem 1rem;">
+                  Solve Inscription
+                </button>
+                <button id="btn-indus-math-hint" class="ancient-btn secondary" style="padding: 0.45rem 0.8rem;">
+                  Hint?
+                </button>
+              </div>
+              <div id="indus-math-feedback" style="font-size: 0.85rem; font-weight: 700;"></div>
+            </div>
+
+            <!-- Stage E: Revealed Treasure Display -->
+            <div id="indus-stage-treasure" class="indus-stage-box" style="display: none; text-align: center; background: #fffdf5; border-color: var(--indus-gold);">
+              <span style="font-size: 2.4rem;">👑 ✨ 📿</span>
+              <h3 style="font-family: var(--font-serif); color: var(--indus-gold); margin: 0.4rem 0;">
+                The Royal Priest-King's Lapis & Gold Talisman Unsealed!
+              </h3>
+              <p style="font-size: 0.88rem; color: var(--indus-dark); max-width: 500px; margin: 0 auto 0.8rem;">
+                A hidden bronze-and-steatite compartment illuminates with morning sunlight, revealing an exquisite ancient Indus talisman untouched for over 4,000 years.
+              </p>
+              <button id="btn-indus-finish" class="indus-btn">
+                <span>View Expedition Completion Record ➔</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================
+           SCREEN 6: EGYPT — ANKH LINK (LEVEL 3)
+           5x5 Non-crossing Hieroglyphic Conduit Puzzle covering all 25 cells
+           ======================================================================== -->
+      <section id="screen-egypt-ankh" class="game-screen">
+        <header class="level-panel-header">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <button id="btn-ankh-back-map" class="ancient-btn secondary" title="World Map (Esc)">
+              <span>🗺️ Map</span>
+            </button>
+            <div style="font-size: 1.8rem;">🔺</div>
+            <div>
+              <h3 style="font-family: var(--font-serif); font-size: 1.25rem; color: #78350f; font-weight: 800;">
+                Ankh Link: Temple of Horus
+              </h3>
+              <p style="font-size: 0.78rem; color: #475569; font-weight: 600;">
+                Connect matching sacred symbols without crossing · Cover every temple stone
+              </p>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.95); border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 0.35rem 0.9rem;">
+            <div class="stat-item">
+              <span class="stat-label">Conduits</span>
+              <span class="stat-value" id="ankh-links-text" style="color: #b45309;">0 / 4</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Coverage</span>
+              <span class="stat-value" id="ankh-coverage-text">0 / 25</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Time</span>
+              <span class="stat-value" id="ankh-timer">00:00</span>
+            </div>
+          </div>
+        </header>
+
+        <div class="objective-banner">
+          <span>Connect all 4 pairs with non-crossing paths and illuminate all 25 stone slabs.</span>
+          <span style="font-weight: 700; color: #b45309;">4 Glyphs · 100% Floor</span>
+        </div>
+
+        <div class="level-play-area">
+          <!-- Egypt Companion Sidebar -->
+          <div class="companion-stage-wrap" id="ankh-companion-wrap">
+            <div class="companion-speech-bubble" id="ankh-speech-bubble">
+              <div class="speech-bubble-text" id="ankh-dialogue-text">"Four pairs, one wall. Every connection must fall exactly where it belongs."</div>
+              <div class="speech-bubble-dismiss">tap to dismiss</div>
+            </div>
+            <div class="companion-figure-box" id="ankh-companion-figure" title="Click for guidance"></div>
+            <div class="companion-badge-pill">
+              <span class="companion-name" id="ankh-companion-name">Kiya</span>
+              <span class="companion-title" id="ankh-companion-title">Horizon Watcher</span>
+              <button class="btn-companion-guidance" id="btn-ankh-ask-companion">
+                <span>💬 Guidance</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="ankh-board-wrapper">
+            <!-- Triumph Sequence Banner -->
+            <div id="ankh-victory-banner" class="ankh-victory-banner">
+              <span style="font-size: 2.8rem; margin-bottom: 0.5rem;">👑 ☥ ✨</span>
+              <h2 style="font-family: var(--font-serif); color: #78350f; font-size: 1.6rem; margin-bottom: 0.4rem;">
+                THE ANCIENT PATTERN IS RESTORED
+              </h2>
+              <p style="font-size: 0.9rem; color: #b45309; font-weight: 700;">
+                All sacred hieroglyphs flow freely across the sanctuary floor
+              </p>
+            </div>
+
+            <!-- 5x5 Stone Grid Canvas -->
+            <div class="ankh-grid-container" id="ankh-grid">
+              <svg class="ankh-svg-overlay" id="ankh-svg"></svg>
+              <!-- Generated dynamically -->
+            </div>
+
+            <!-- Symbol Selector & Status Bar -->
+            <div class="ankh-legend-bar">
+              <div class="ankh-legend-chip active" id="chip-ankh" data-symbol="ankh" style="color: var(--eg-gold);">
+                <span>☥</span> Ankh <span id="status-ankh">○</span>
+              </div>
+              <div class="ankh-legend-chip" id="chip-horus" data-symbol="horus" style="color: var(--eg-turquoise);">
+                <span>𓂀</span> Horus <span id="status-horus">○</span>
+              </div>
+              <div class="ankh-legend-chip" id="chip-scarab" data-symbol="scarab" style="color: var(--eg-emerald);">
+                <span>🪲</span> Scarab <span id="status-scarab">○</span>
+              </div>
+              <div class="ankh-legend-chip" id="chip-feather" data-symbol="feather" style="color: var(--eg-ruby);">
+                <span>🪶</span> Feather <span id="status-feather">○</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="puzzle-controls-bar">
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="btn-ankh-undo" class="ancient-btn secondary" title="Undo Last Step (U)">
+              <span>↩ Undo</span>
+            </button>
+            <button id="btn-ankh-clear-active" class="ancient-btn secondary">
+              <span>✕ Clear Active Glyph</span>
+            </button>
+            <button id="btn-ankh-reset-all" class="ancient-btn secondary" title="Reset All Conduits (R)">
+              <span>🔄 Reset All</span>
+            </button>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ========================================================================
+           MODALS
+           ======================================================================== -->
+      <!-- Artifact Inspection Modal -->
+      <div id="artifact-inspect-modal" class="indus-modal-overlay">
+        <div class="indus-modal-card">
+          <div id="modal-art-icon" style="font-size: 3rem; margin-bottom: 0.5rem;">🏺</div>
+          <h3 id="modal-art-title" style="font-family: var(--font-serif); color: var(--indus-clay); font-size: 1.25rem; margin-bottom: 0.5rem;"></h3>
+          <p id="modal-art-desc" style="font-size: 0.88rem; line-height: 1.5; color: var(--indus-dark); margin-bottom: 1.25rem;"></p>
+          <button id="btn-close-artifact-modal" class="indus-btn" style="padding: 0.4rem 1.2rem;">
+            Continue Exploration
+          </button>
+        </div>
+      </div>
+
+      <!-- Stage F: Indus Valley Completion Screen Modal -->
+      <div id="indus-complete-modal" class="indus-modal-overlay">
+        <div class="indus-modal-card" style="max-width: 520px;">
+          <span style="font-size: 2.2rem;">⭐⭐⭐</span>
+          <h2 style="font-family: var(--font-serif); color: var(--indus-clay); font-size: 1.6rem; margin: 0.25rem 0;">
+            Chamber of Mohenjo-daro Cleared!
+          </h2>
+          <p style="font-size: 0.85rem; color: var(--indus-teal); font-weight: 700; margin-bottom: 1rem;">
+            The Lost Seal of the Indus Valley Recovered
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; width: 100%; background: #fff; border: 1px solid var(--indus-sandstone); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; text-align: left; font-size: 0.8rem;">
+            <div><strong>Time Taken:</strong> <span id="indus-stat-time">00:00</span></div>
+            <div><strong>Incorrect Attempts:</strong> <span id="indus-stat-attempts">0</span></div>
+            <div><strong>Hints Used:</strong> <span id="indus-stat-hints">0</span></div>
+            <div><strong>Artifacts Inspected:</strong> <span id="indus-stat-artifacts">0 / 4</span></div>
+          </div>
+
+          <div style="background: #fbf5ea; border-left: 3px solid var(--indus-gold); padding: 0.6rem 0.8rem; font-size: 0.78rem; color: var(--indus-dark); text-align: left; line-height: 1.45; margin-bottom: 1.25rem;">
+            <strong>Historical Context:</strong> Mohenjo-daro, built circa 2500 BCE, was one of the greatest urban settlements of the ancient Indus Valley Civilisation, renowned for its planned streets, fired-brick architecture, and enigmatic script that remains one of archaeology's foremost unsolved mysteries.
+          </div>
+
+          <div style="display: flex; gap: 0.75rem;">
+            <button id="btn-indus-continue-map" class="indus-btn">
+              <span>Continue to World Map ➔</span>
+            </button>
+            <button id="btn-indus-replay" class="ancient-btn secondary">
+              <span>Replay Level ↺</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STANDARD LEVEL COMPLETE MODAL (FOR JAPAN & EGYPT) -->
+      <div id="level-complete-modal">
+        <div class="modal-card">
+          <h2 class="modal-title">Pattern Harmonized!</h2>
+          <p class="modal-subtitle" id="modal-level-name">Kyoto Zen Garden</p>
+          <div class="modal-stars" id="modal-stars">⭐⭐⭐</div>
+
+          <div class="modal-stats">
+            <div class="stat-item">
+              <span class="stat-label">Steps / Coverage</span>
+              <span class="stat-value" id="modal-moves">32 / 32</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Completion Time</span>
+              <span class="stat-value" id="modal-time">00:45</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button id="btn-modal-continue" class="ancient-btn">
+              <span>Continue to World Map ➔</span>
+            </button>
+            <button id="btn-modal-replay" class="ancient-btn secondary">
+              <span>Replay Level ↺</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- External Character Design Bible & Centralized Web Audio Modules -->
+    <script src="/characters.js"></script>
+    <script src="/audio.js"></script>
+
+    <!-- ==========================================================================
+         GAME LOGIC & AUDIO ENGINE & INDUS VALLEY ARCHAEOLOGY ENGINE
+         ========================================================================== -->
+    <script>
+      (function() {
+        "use strict";
+
+        /* ========================================================================
+           MULTI-WORLD ENVIRONMENT CONTROLLER
+           Strictly toggles background layers with zero cross-country bleed
+           ======================================================================== */
+        const backdropLayers = {
+          parchment: document.getElementById("bg-parchment"),
+          japan: document.getElementById("bg-japan"),
+          india: document.getElementById("bg-india"),
+          egypt: document.getElementById("bg-egypt")
+        };
+
+        function setWorldEnvironment(worldId) {
+          Object.keys(backdropLayers).forEach(key => {
+            const el = backdropLayers[key];
+            if (el) el.classList.remove("active");
+          });
+
+          if (worldId === "japan" && backdropLayers.japan) {
+            backdropLayers.japan.classList.add("active");
+            particleEngine.setMode("japan");
+          } else if (worldId === "india" && backdropLayers.india) {
+            backdropLayers.india.classList.add("active");
+            particleEngine.setMode("india");
+          } else if (worldId === "egypt" && backdropLayers.egypt) {
+            backdropLayers.egypt.classList.add("active");
+            particleEngine.setMode("egypt");
+          } else {
+            if (backdropLayers.parchment) backdropLayers.parchment.classList.add("active");
+            particleEngine.setMode("default");
+          }
+        }
+
+        /* ========================================================================
+           AMBIENT PARTICLE ENGINE
+           ======================================================================== */
+        class AmbientParticleEngine {
+          constructor() {
+            this.canvas = document.getElementById("ambient-particles-canvas");
+            this.ctx = this.canvas ? this.canvas.getContext("2d") : null;
+            this.particles = [];
+            this.currentMode = "default";
+            this.animId = null;
+            this.init();
+          }
+
+          init() {
+            if (!this.canvas) return;
+            this.resize();
+            window.addEventListener("resize", () => this.resize());
+            this.start();
+          }
+
+          resize() {
+            if (!this.canvas) return;
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+            this.resetParticles();
+          }
+
+          setMode(mode) {
+            this.currentMode = mode;
+            this.resetParticles();
+          }
+
+          resetParticles() {
+            this.particles = [];
+            if (!this.canvas) return;
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+            const count = this.currentMode === "japan" ? 34 : (this.currentMode === "india" ? 42 : 36);
+
+            for (let i = 0; i < count; i++) {
+              if (this.currentMode === "japan") {
+                this.particles.push({
+                  x: Math.random() * w,
+                  y: Math.random() * h,
+                  size: Math.random() * 8 + 6,
+                  speedX: Math.random() * 1.5 + 0.5,
+                  speedY: Math.random() * 1.2 + 0.8,
+                  rotation: Math.random() * 360,
+                  rotSpeed: (Math.random() - 0.5) * 2,
+                  color: Math.random() > 0.4 ? "rgba(244, 114, 182, 0.75)" : "rgba(251, 207, 232, 0.85)"
+                });
+              } else if (this.currentMode === "india") {
+                // Golden sunlight dust motes in Mohenjo-daro
+                this.particles.push({
+                  x: Math.random() * w,
+                  y: Math.random() * h,
+                  size: Math.random() * 3.5 + 1.5,
+                  speedX: (Math.random() - 0.5) * 0.5,
+                  speedY: Math.random() * -0.5 - 0.2,
+                  pulse: Math.random() * Math.PI * 2,
+                  color: "rgba(199, 161, 90, " + (Math.random() * 0.5 + 0.3) + ")"
+                });
+              } else if (this.currentMode === "egypt") {
+                // Fine golden sand drifting through temple halls
+                this.particles.push({
+                  x: Math.random() * w,
+                  y: Math.random() * h,
+                  size: Math.random() * 3 + 1.5,
+                  speedX: Math.random() * 1.8 + 0.6,
+                  speedY: Math.random() * 0.4 - 0.2,
+                  color: "rgba(254, 240, 138, " + (Math.random() * 0.6 + 0.4) + ")"
+                });
+              } else {
+                this.particles.push({
+                  x: Math.random() * w,
+                  y: Math.random() * h,
+                  size: Math.random() * 3 + 1.5,
+                  speedX: (Math.random() - 0.5) * 0.4,
+                  speedY: -0.3,
+                  color: "rgba(180, 83, 9, 0.25)"
+                });
+              }
+            }
+          }
+
+          start() {
+            const loop = () => {
+              this.update();
+              this.draw();
+              this.animId = requestAnimationFrame(loop);
+            };
+            this.animId = requestAnimationFrame(loop);
+          }
+
+          update() {
+            if (!this.canvas) return;
+            const w = this.canvas.width;
+            const h = this.canvas.height;
+
+            this.particles.forEach(p => {
+              p.x += p.speedX;
+              p.y += p.speedY;
+
+              if (this.currentMode === "japan") {
+                p.rotation += p.rotSpeed;
+                if (p.x > w + 20) p.x = -20;
+                if (p.y > h + 20) p.y = -20;
+              } else if (this.currentMode === "india") {
+                p.pulse += 0.04;
+                if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+              } else if (this.currentMode === "egypt") {
+                if (p.x > w + 10) { p.x = -10; p.y = Math.random() * h; }
+              } else {
+                if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
+              }
+            });
+          }
+
+          draw() {
+            if (!this.ctx || !this.canvas) return;
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            this.particles.forEach(p => {
+              this.ctx.save();
+              if (this.currentMode === "japan") {
+                this.ctx.translate(p.x, p.y);
+                this.ctx.rotate((p.rotation * Math.PI) / 180);
+                this.ctx.fillStyle = p.color;
+                this.ctx.beginPath();
+                this.ctx.ellipse(0, 0, p.size, p.size * 0.5, 0, 0, Math.PI * 2);
+                this.ctx.fill();
+              } else {
+                this.ctx.fillStyle = p.color;
+                this.ctx.beginPath();
+                this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                this.ctx.fill();
+              }
+              this.ctx.restore();
+            });
+          }
+        }
+
+        const particleEngine = new AmbientParticleEngine();
+
+        // Sacred Patterns Global Audio & Character Integrations
+        const audio = window.sacredAudio;
+        const CHARACTERS = window.SACRED_CHARACTERS;
+
+        /* ========================================================================
+           GAME STATE
+           ======================================================================== */
+        const gameState = {
+          currentScreen: "title",
+          selectedCharacter: "yuki",
+          companions: {
+            japan: "yuki",
+            india: "amara",
+            egypt: "kiya"
+          },
+          unlockedLevels: [1, 0, 0],
+          completedLevels: [0, 0, 0],
+          levelStars: [0, 0, 0],
+          currentLevel: 1,
+
+          // Japan: Zen Trail 6x6 State
+          zen: {
+            size: 6,
+            stones: [
+              { r: 1, c: 1 },
+              { r: 1, c: 4 },
+              { r: 4, c: 1 },
+              { r: 4, c: 4 }
+            ],
+            path: [{ r: 0, c: 0 }],
+            isWon: false,
+            timerSeconds: 0,
+            timerInterval: null
+          },
+
+          // India: Indus Valley Chamber State
+          indus: {
+            stage: "opening",
+            inspectedArtifacts: new Set(),
+            selectedPedestalSeal: null,
+            slots: [null, null, null],
+            attempts: 0,
+            hintsUsed: 0,
+            timerSeconds: 0,
+            timerInterval: null
+          },
+
+          // Egypt: Ankh Link 5x5 State
+          ankh: {
+            size: 5,
+            activeSymbol: "ankh",
+            symbols: {
+              ankh: {
+                id: "ankh",
+                name: "Ankh",
+                glyph: "☥",
+                color: "#f59e0b",
+                endpoints: [{ r: 0, c: 0 }, { r: 2, c: 2 }]
+              },
+              horus: {
+                id: "horus",
+                name: "Eye of Horus",
+                glyph: "𓂀",
+                color: "#06b6d4",
+                endpoints: [{ r: 0, c: 3 }, { r: 3, c: 4 }]
+              },
+              scarab: {
+                id: "scarab",
+                name: "Scarab",
+                glyph: "🪲",
+                color: "#10b981",
+                endpoints: [{ r: 1, c: 3 }, { r: 3, c: 1 }]
+              },
+              feather: {
+                id: "feather",
+                name: "Feather of Ma'at",
+                glyph: "🪶",
+                color: "#ec4899",
+                endpoints: [{ r: 1, c: 0 }, { r: 4, c: 4 }]
+              }
+            },
+            paths: {
+              ankh: [],
+              horus: [],
+              scarab: [],
+              feather: []
+            },
+            history: [],
+            isWon: false,
+            timerSeconds: 0,
+            timerInterval: null
+          }
+        };
+
+        const screens = {
+          title: document.getElementById("screen-title"),
+          characters: document.getElementById("screen-characters"),
+          map: document.getElementById("screen-map"),
+          japanZen: document.getElementById("screen-japan-zen"),
+          indiaChamber: document.getElementById("screen-india-chamber"),
+          egyptAnkh: document.getElementById("screen-egypt-ankh")
+        };
+
+        /* ========================================================================
+           COMPANION MANAGEMENT & SVG PRESENTATION ENGINE
+           ======================================================================== */
+        const CHAR_EMOJIS = {
+          amara: "🏺",
+          vikram: "📐",
+          yuki: "⛩️",
+          kenji: "🎋",
+          kiya: "☥",
+          ahmose: "🪷"
+        };
+
+        let companionDialogueTimeouts = {
+          japan: null,
+          india: null,
+          egypt: null
+        };
+
+        function renderCompanionSelectPreviews() {
+          if (!window.getCompanionSVG) return;
+          const charIds = ["amara", "vikram", "yuki", "kenji", "kiya", "ahmose"];
+          charIds.forEach(id => {
+            const previewEl = document.getElementById(`preview-${id}`);
+            if (previewEl && !previewEl.hasChildNodes()) {
+              previewEl.innerHTML = window.getCompanionSVG(id, "portrait");
+            }
+          });
+          updateCompanionSelectCardsUI();
+        }
+
+        function updateCompanionSelectCardsUI() {
+          const charIds = ["amara", "vikram", "yuki", "kenji", "kiya", "ahmose"];
+          charIds.forEach(id => {
+            const card = document.getElementById(`card-${id}`);
+            if (!card) return;
+            const country = card.dataset.country;
+            const isSelected = gameState.companions[country] === id;
+            if (isSelected) {
+              card.classList.add("selected");
+            } else {
+              card.classList.remove("selected");
+            }
+          });
+        }
+
+        function selectCompanionCard(charId) {
+          const char = CHARACTERS ? CHARACTERS[charId] : null;
+          if (!char) return;
+
+          const country = char.country.toLowerCase();
+          gameState.companions[country] = charId;
+          gameState.selectedCharacter = charId;
+
+          updateCompanionSelectCardsUI();
+          updateGuideUI();
+          updateCompanionPresentations();
+
+          if (audio) {
+            audio.init();
+            audio.playMoveSound();
+          }
+        }
+
+        function updateCompanionPresentations() {
+          if (!window.getCompanionSVG || !CHARACTERS) return;
+
+          // Japan Zen companion
+          const jCharId = gameState.companions.japan || "yuki";
+          const jChar = CHARACTERS[jCharId];
+          const jFig = document.getElementById("zen-companion-figure");
+          const jName = document.getElementById("zen-companion-name");
+          const jTitle = document.getElementById("zen-companion-title");
+          if (jFig) jFig.innerHTML = window.getCompanionSVG(jCharId, "idle");
+          if (jName && jChar) jName.textContent = jChar.name;
+          if (jTitle && jChar) jTitle.textContent = jChar.role;
+
+          // India Indus companion
+          const iCharId = gameState.companions.india || "amara";
+          const iChar = CHARACTERS[iCharId];
+          const iFig = document.getElementById("indus-companion-figure");
+          const iName = document.getElementById("indus-companion-name");
+          const iTitle = document.getElementById("indus-companion-title");
+          const iQuote = document.getElementById("indus-companion-quote");
+          if (iFig) iFig.innerHTML = window.getCompanionSVG(iCharId, "idle");
+          if (iName && iChar) iName.textContent = iChar.name;
+          if (iTitle && iChar) iTitle.textContent = iChar.role;
+          if (iQuote && iChar) iQuote.textContent = `"${iChar.dialogue.intro}"`;
+
+          // Egypt Ankh companion
+          const eCharId = gameState.companions.egypt || "kiya";
+          const eChar = CHARACTERS[eCharId];
+          const eFig = document.getElementById("ankh-companion-figure");
+          const eName = document.getElementById("ankh-companion-name");
+          const eTitle = document.getElementById("ankh-companion-title");
+          if (eFig) eFig.innerHTML = window.getCompanionSVG(eCharId, "idle");
+          if (eName && eChar) eName.textContent = eChar.name;
+          if (eTitle && eChar) eTitle.textContent = eChar.role;
+        }
+
+        function triggerCompanionDialogue(worldId, eventKey, customText) {
+          const charId = gameState.companions[worldId] || (worldId === "japan" ? "yuki" : (worldId === "india" ? "amara" : "kiya"));
+          const char = CHARACTERS ? CHARACTERS[charId] : null;
+          if (!char) return;
+
+          const text = customText || (char.dialogue && char.dialogue[eventKey]) || "";
+          if (!text) return;
+
+          let bubble = null;
+          let textEl = null;
+
+          if (worldId === "japan") {
+            bubble = document.getElementById("zen-speech-bubble");
+            textEl = document.getElementById("zen-dialogue-text");
+          } else if (worldId === "india") {
+            bubble = document.getElementById("indus-speech-bubble");
+            textEl = document.getElementById("indus-dialogue-text");
+          } else if (worldId === "egypt") {
+            bubble = document.getElementById("ankh-speech-bubble");
+            textEl = document.getElementById("ankh-dialogue-text");
+          }
+
+          if (!bubble || !textEl) return;
+
+          textEl.textContent = `"${text}"`;
+          bubble.classList.add("active");
+
+          if (companionDialogueTimeouts[worldId]) {
+            clearTimeout(companionDialogueTimeouts[worldId]);
+          }
+
+          companionDialogueTimeouts[worldId] = setTimeout(() => {
+            bubble.classList.remove("active");
+          }, 4500);
+        }
+
+        function switchScreen(screenName, transitionType = "normal") {
+          gameState.currentScreen = screenName;
+          Object.keys(screens).forEach(key => {
+            const el = screens[key];
+            if (el) el.classList.remove("active", "zoom-in", "zoom-out");
+          });
+
+          const targetScreen = screens[screenName];
+          if (!targetScreen) return;
+
+          if (transitionType === "zoom-in") {
+            targetScreen.classList.add("zoom-in");
+            setTimeout(() => {
+              targetScreen.classList.remove("zoom-in");
+              targetScreen.classList.add("active");
+            }, 30);
+          } else {
+            targetScreen.classList.add("active");
+          }
+
+          // Strict World Environment & Ambient Music Switching (no bleed between worlds)
+          if (screenName === "japanZen") {
+            setWorldEnvironment("japan");
+            if (audio) audio.startWorldMusic("japan");
+            updateCompanionPresentations();
+            triggerCompanionDialogue("japan", "intro");
+          } else if (screenName === "indiaChamber") {
+            setWorldEnvironment("india");
+            if (audio) audio.startWorldMusic("india");
+            updateCompanionPresentations();
+            triggerCompanionDialogue("india", "intro");
+          } else if (screenName === "egyptAnkh") {
+            setWorldEnvironment("egypt");
+            if (audio) audio.startWorldMusic("egypt");
+            updateCompanionPresentations();
+            triggerCompanionDialogue("egypt", "intro");
+          } else {
+            setWorldEnvironment("parchment");
+            if (audio) audio.stopWorldMusic();
+          }
+
+          if (screenName === "characters") {
+            renderCompanionSelectPreviews();
+          }
+
+          if (screenName === "map") {
+            updateWorldMapUI();
+          }
+        }
+
+        function updateGuideUI() {
+          const char = CHARACTERS ? CHARACTERS[gameState.selectedCharacter] : null;
+          if (!char) return;
+
+          const emoji = CHAR_EMOJIS[char.id] || "🧭";
+          const chipAvatar = document.getElementById("map-chip-avatar");
+          if (chipAvatar) {
+            chipAvatar.textContent = emoji;
+            chipAvatar.style.backgroundColor = char.palette ? char.palette.primary : "#b45309";
+          }
+          const chipName = document.getElementById("map-chip-name");
+          if (chipName) chipName.textContent = char.name;
+          const chipRole = document.getElementById("map-chip-role");
+          if (chipRole) chipRole.textContent = char.role;
+
+          const token = document.getElementById("map-guide-token");
+          const tokenEmoji = document.getElementById("guide-token-emoji");
+          const tokenName = document.getElementById("guide-token-name");
+          if (tokenEmoji) tokenEmoji.textContent = emoji;
+          if (tokenName) tokenName.textContent = char.name;
+
+          if (token) {
+            if (char.levelId === 1) {
+              token.style.left = "78%";
+              token.style.top = "26%";
+            } else if (char.levelId === 2) {
+              token.style.left = "50%";
+              token.style.top = "56%";
+            } else if (char.levelId === 3) {
+              token.style.left = "22%";
+              token.style.top = "38%";
+            }
+          }
+        }
+
+        /* ========================================================================
+           WORLD MAP MANAGEMENT
+           ======================================================================== */
+        function updateWorldMapUI() {
+          updateGuideUI();
+
+          updateNodeUI(1, gameState.unlockedLevels[0] === 1, gameState.completedLevels[0] === 1, gameState.levelStars[0]);
+          updateNodeUI(2, gameState.unlockedLevels[1] === 1, gameState.completedLevels[1] === 1, gameState.levelStars[1]);
+          updateNodeUI(3, gameState.unlockedLevels[2] === 1, gameState.completedLevels[2] === 1, gameState.levelStars[2]);
+
+          const route1 = document.getElementById("route-path-1");
+          if (route1) {
+            if (gameState.unlockedLevels[1] === 1) {
+              route1.setAttribute("stroke", "#ea580c");
+              route1.setAttribute("stroke-opacity", "0.95");
+              route1.setAttribute("stroke-width", "4.5");
+            } else {
+              route1.setAttribute("stroke", "#94a3b8");
+              route1.setAttribute("stroke-opacity", "0.5");
+              route1.setAttribute("stroke-width", "2.5");
+            }
+          }
+
+          const route2 = document.getElementById("route-path-2");
+          if (route2) {
+            if (gameState.unlockedLevels[2] === 1) {
+              route2.setAttribute("stroke", "#ea580c");
+              route2.setAttribute("stroke-opacity", "0.95");
+              route2.setAttribute("stroke-width", "4.5");
+            } else {
+              route2.setAttribute("stroke", "#94a3b8");
+              route2.setAttribute("stroke-opacity", "0.5");
+              route2.setAttribute("stroke-width", "2.5");
+            }
+          }
+        }
+
+        function updateNodeUI(lvlId, isUnlocked, isCompleted, stars) {
+          const node = document.getElementById(`map-node-${lvlId}`);
+          const badge = document.getElementById(`badge-level-${lvlId}`);
+          const starsEl = document.getElementById(`stars-level-${lvlId}`);
+          if (!node || !badge) return;
+
+          if (isUnlocked) {
+            node.classList.remove("locked");
+            node.classList.add("unlocked");
+            if (isCompleted) {
+              badge.textContent = "✓";
+              badge.style.color = "#059669";
+              badge.style.borderColor = "#059669";
+            } else {
+              badge.textContent = `${lvlId}`;
+              badge.style.color = "#b45309";
+              badge.style.borderColor = "#b45309";
+            }
+          } else {
+            node.classList.add("locked");
+            node.classList.remove("unlocked");
+            badge.textContent = "🔒";
+            badge.style.color = "#64748b";
+            badge.style.borderColor = "#cbd5e1";
+          }
+
+          if (starsEl) {
+            if (isCompleted && stars > 0) {
+              starsEl.textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
+            } else {
+              starsEl.textContent = "☆☆☆";
+            }
+          }
+        }
+
+        /* ========================================================================
+           LEVEL ROUTER
+           ======================================================================== */
+        function startLevel(levelId) {
+          gameState.currentLevel = levelId;
+          audio.init();
+          audio.playMoveSound();
+
+          if (levelId === 1) {
+            initJapanZenLevel();
+            switchScreen("japanZen", "zoom-in");
+          } else if (levelId === 2) {
+            startIndiaLevel();
+            switchScreen("indiaChamber", "zoom-in");
+          } else if (levelId === 3) {
+            initEgyptAnkhLevel();
+            switchScreen("egyptAnkh", "zoom-in");
+          }
+        }
+
+        /* ========================================================================
+           1. JAPAN: ZEN TRAIL ENGINE (6x6 KARESANSUI CONTINUOUS PATH)
+           ======================================================================== */
+        function isZenStone(r, c) {
+          return gameState.zen.stones.some(s => s.r === r && s.c === c);
+        }
+
+        function isZenInPath(r, c) {
+          return gameState.zen.path.some(p => p.r === r && p.c === c);
+        }
+
+        function initJapanZenLevel() {
+          gameState.zen.path = [{ r: 0, c: 0 }];
+          gameState.zen.isWon = false;
+          gameState.zen.timerSeconds = 0;
+
+          clearInterval(gameState.zen.timerInterval);
+          gameState.zen.timerInterval = setInterval(() => {
+            if (!gameState.zen.isWon) {
+              gameState.zen.timerSeconds++;
+              updateZenTimerUI();
+            }
+          }, 1000);
+
+          const victoryBanner = document.getElementById("zen-victory-banner");
+          if (victoryBanner) victoryBanner.classList.remove("active");
+
+          renderZenGrid();
+          updateZenStatusUI();
+          updateZenTimerUI();
+        }
+
+        function updateZenTimerUI() {
+          const mins = Math.floor(gameState.zen.timerSeconds / 60).toString().padStart(2, "0");
+          const secs = (gameState.zen.timerSeconds % 60).toString().padStart(2, "0");
+          const el = document.getElementById("zen-timer");
+          if (el) el.textContent = `${mins}:${secs}`;
+        }
+
+        function updateZenStatusUI() {
+          const visitedCount = gameState.zen.path.length;
+          const totalSand = 32;
+          const progText = document.getElementById("zen-progress-text");
+          const progFill = document.getElementById("zen-progress-fill");
+          if (progText) progText.textContent = `${visitedCount} / ${totalSand}`;
+          if (progFill) progFill.style.width = `${(visitedCount / totalSand) * 100}%`;
+        }
+
+        function renderZenGrid() {
+          const gridEl = document.getElementById("zen-grid");
+          const svgEl = document.getElementById("zen-svg");
+          if (!gridEl || !svgEl) return;
+
+          // Clear old cells (keep SVG)
+          const cells = gridEl.querySelectorAll(".zen-cell");
+          cells.forEach(c => c.remove());
+
+          const path = gameState.zen.path;
+          const currentHead = path[path.length - 1];
+
+          for (let r = 0; r < 6; r++) {
+            for (let c = 0; c < 6; c++) {
+              const cell = document.createElement("div");
+              cell.className = "zen-cell";
+              cell.dataset.r = r;
+              cell.dataset.c = c;
+
+              if (isZenStone(r, c)) {
+                cell.classList.add("stone");
+              } else {
+                if (isZenInPath(r, c)) {
+                  cell.classList.add("raked");
+                  const stepIndex = path.findIndex(p => p.r === r && p.c === c);
+                  if (stepIndex === path.length - 1) {
+                    cell.classList.add("current-head");
+                    const icon = document.createElement("span");
+                    icon.style.fontSize = "1.5rem";
+                    icon.textContent = "🎋";
+                    cell.appendChild(icon);
+                  } else {
+                    const badge = document.createElement("span");
+                    badge.style.fontSize = "0.7rem";
+                    badge.style.fontWeight = "700";
+                    badge.style.color = "#a16207";
+                    badge.textContent = `${stepIndex + 1}`;
+                    cell.appendChild(badge);
+                  }
+                }
+              }
+
+              cell.addEventListener("click", () => handleZenCellClick(r, c));
+              gridEl.appendChild(cell);
+            }
+          }
+
+          renderZenSVG();
+        }
+
+        function renderZenSVG() {
+          const svgEl = document.getElementById("zen-svg");
+          const gridEl = document.getElementById("zen-grid");
+          if (!svgEl || !gridEl) return;
+
+          svgEl.innerHTML = "";
+          const path = gameState.zen.path;
+          if (path.length < 2) return;
+
+          const cells = gridEl.querySelectorAll(".zen-cell");
+          if (!cells.length) return;
+
+          const gridRect = gridEl.getBoundingClientRect();
+          let pathD = "";
+
+          path.forEach((p, idx) => {
+            const cell = gridEl.querySelector(`.zen-cell[data-r="${p.r}"][data-c="${p.c}"]`);
+            if (!cell) return;
+            const rect = cell.getBoundingClientRect();
+            const cx = rect.left - gridRect.left + rect.width / 2;
+            const cy = rect.top - gridRect.top + rect.height / 2;
+
+            if (idx === 0) {
+              pathD += `M ${cx} ${cy} `;
+            } else {
+              pathD += `L ${cx} ${cy} `;
+            }
+          });
+
+          const pathLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          pathLine.setAttribute("d", pathD);
+          pathLine.setAttribute("fill", "none");
+          pathLine.setAttribute("stroke", "#e11d48");
+          pathLine.setAttribute("stroke-width", "4.5");
+          pathLine.setAttribute("stroke-linecap", "round");
+          pathLine.setAttribute("stroke-linejoin", "round");
+          pathLine.setAttribute("stroke-opacity", "0.85");
+          svgEl.appendChild(pathLine);
+        }
+
+        function handleZenCellClick(r, c) {
+          if (gameState.zen.isWon) return;
+
+          const path = gameState.zen.path;
+          const currentHead = path[path.length - 1];
+
+          // Check if clicking previous cell (undo back to that cell)
+          const existingIdx = path.findIndex(p => p.r === r && p.c === c);
+          if (existingIdx !== -1 && existingIdx === path.length - 2) {
+            undoZenStep();
+            return;
+          }
+
+          // Orthogonal neighbor check
+          const dr = Math.abs(currentHead.r - r);
+          const dc = Math.abs(currentHead.c - c);
+          if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+            if (isZenStone(r, c)) {
+              audio.playCrackSound();
+              triggerCompanionDialogue("japan", "invalid");
+              return;
+            }
+            if (isZenInPath(r, c)) {
+              audio.playCrackSound();
+              triggerCompanionDialogue("japan", "invalid");
+              return;
+            }
+
+            path.push({ r, c });
+            audio.playSandRakeSound();
+            renderZenGrid();
+            updateZenStatusUI();
+
+            if (path.length === 16) {
+              triggerCompanionDialogue("japan", "progress");
+            }
+
+            checkZenWin();
+          }
+        }
+
+        function moveZenDir(dr, dc) {
+          if (gameState.zen.isWon) return;
+          const path = gameState.zen.path;
+          const currentHead = path[path.length - 1];
+          const nr = currentHead.r + dr;
+          const nc = currentHead.c + dc;
+
+          if (nr < 0 || nr >= 6 || nc < 0 || nc >= 6) return;
+
+          // If retreating to immediate previous step
+          if (path.length > 1 && path[path.length - 2].r === nr && path[path.length - 2].c === nc) {
+            undoZenStep();
+            return;
+          }
+
+          if (isZenStone(nr, nc) || isZenInPath(nr, nc)) {
+            audio.playCrackSound();
+            triggerCompanionDialogue("japan", "invalid");
+            return;
+          }
+
+          path.push({ r: nr, c: nc });
+          audio.playSandRakeSound();
+          renderZenGrid();
+          updateZenStatusUI();
+
+          if (path.length === 16) {
+            triggerCompanionDialogue("japan", "progress");
+          }
+
+          checkZenWin();
+        }
+
+        function undoZenStep() {
+          if (gameState.zen.isWon || gameState.zen.path.length <= 1) return;
+          gameState.zen.path.pop();
+          audio.playMoveSound();
+          renderZenGrid();
+          updateZenStatusUI();
+        }
+
+        function resetZenLevel() {
+          initJapanZenLevel();
+          audio.playMoveSound();
+        }
+
+        function checkZenWin() {
+          // Total sand cells = 36 total - 4 stones = 32 cells
+          if (gameState.zen.path.length === 32 && !gameState.zen.isWon) {
+            gameState.zen.isWon = true;
+            clearInterval(gameState.zen.timerInterval);
+            audio.playTempleBell();
+            triggerCompanionDialogue("japan", "success");
+
+            const victoryBanner = document.getElementById("zen-victory-banner");
+            if (victoryBanner) victoryBanner.classList.add("active");
+
+            gameState.completedLevels[0] = 1;
+            gameState.unlockedLevels[1] = 1; // Unlock India!
+            gameState.levelStars[0] = 3;
+
+            setTimeout(() => {
+              showLevelCompleteModal(
+                "Kyoto Zen Garden (Japan)",
+                3,
+                "32 / 32 Raked",
+                gameState.zen.timerSeconds,
+                () => {
+                  switchScreen("map", "zoom-out");
+                },
+                () => {
+                  initJapanZenLevel();
+                }
+              );
+            }, 1200);
+          }
+        }
+
+        /* ========================================================================
+           2. INDIA: THE LOST SEAL OF THE INDUS VALLEY ENGINE
+           Preserved Mohenjo-daro archaeological chamber (Stages A - F)
+           ======================================================================== */
+        const ARTIFACT_INFO = {
+          jar: {
+            name: "Terracotta Storage Jar",
+            icon: "🏺",
+            desc: "A high-necked Indus pottery vessel used for sacred offerings, stamped with geometric circle motifs."
+          },
+          seal: {
+            name: "Broken Steatite Seal",
+            icon: "🪨",
+            desc: "Fragments of an ancient Indus seal bearing an undeciphered script carved into soft soapstone and hardened by kiln fire."
+          },
+          wall: {
+            name: "Ancient Wall Inscription",
+            icon: "🧱",
+            desc: "Faded pictographic glyphs carved into the reddish kiln-fired bricks of the chamber wall."
+          },
+          tool: {
+            name: "Bronze Excavation Tool",
+            icon: "🔧",
+            desc: "A precision measuring rod and chisel left by early archaeologists unearthing the citadel."
+          }
+        };
+
+        const SEAL_DATA = {
+          unicorn: { name: "Unicorn", icon: "🦏" },
+          fish: { name: "Fish", icon: "🐟" },
+          jar: { name: "Jar", icon: "🏺" }
+        };
+
+        function startIndiaLevel() {
+          gameState.indus = {
+            stage: "opening",
+            inspectedArtifacts: new Set(),
+            selectedPedestalSeal: null,
+            slots: [null, null, null],
+            attempts: 0,
+            hintsUsed: 0,
+            timerSeconds: 0,
+            timerInterval: null
+          };
+
+          clearInterval(gameState.indus.timerInterval);
+          gameState.indus.timerInterval = setInterval(() => {
+            gameState.indus.timerSeconds++;
+          }, 1000);
+
+          document.getElementById("indus-stage-opening").style.display = "block";
+          document.getElementById("indus-main-chamber").style.display = "none";
+          document.getElementById("indus-stage-math").style.display = "none";
+          document.getElementById("indus-stage-treasure").style.display = "none";
+          document.getElementById("seal-feedback-msg").textContent = "";
+          document.getElementById("indus-math-feedback").textContent = "";
+          document.getElementById("indus-math-input").value = "";
+
+          renderIndusSlots();
+          renderIndusTray();
+          document.querySelectorAll(".artifact-card").forEach(c => c.classList.remove("inspected"));
+        }
+
+        function enterIndusChamber() {
+          document.getElementById("indus-stage-opening").style.display = "none";
+          const mainChamber = document.getElementById("indus-main-chamber");
+          mainChamber.style.display = "flex";
+          audio.playMoveSound();
+        }
+
+        function inspectArtifact(artId) {
+          const info = ARTIFACT_INFO[artId];
+          if (!info) return;
+
+          gameState.indus.inspectedArtifacts.add(artId);
+          const card = document.querySelector(`.artifact-card[data-artifact="${artId}"]`);
+          if (card) card.classList.add("inspected");
+
+          document.getElementById("modal-art-icon").textContent = info.icon;
+          document.getElementById("modal-art-title").textContent = info.name;
+          document.getElementById("modal-art-desc").textContent = info.desc;
+          document.getElementById("artifact-inspect-modal").classList.add("active");
+          audio.playMoveSound();
+        }
+
+        function selectPedestalSeal(sealId) {
+          gameState.indus.selectedPedestalSeal = sealId;
+          document.querySelectorAll(".seal-token").forEach(t => {
+            if (t.dataset.seal === sealId) {
+              t.classList.add("selected");
+            } else {
+              t.classList.remove("selected");
+            }
+          });
+          audio.playMoveSound();
+        }
+
+        function placeSealInSlot(slotIdx) {
+          if (!gameState.indus.selectedPedestalSeal) {
+            if (gameState.indus.slots[slotIdx]) {
+              gameState.indus.slots[slotIdx] = null;
+              renderIndusSlots();
+              renderIndusTray();
+              audio.playMoveSound();
+            }
+            return;
+          }
+
+          const seal = gameState.indus.selectedPedestalSeal;
+          const existingSlot = gameState.indus.slots.indexOf(seal);
+          if (existingSlot !== -1) {
+            gameState.indus.slots[existingSlot] = null;
+          }
+
+          gameState.indus.slots[slotIdx] = seal;
+          gameState.indus.selectedPedestalSeal = null;
+          document.querySelectorAll(".seal-token").forEach(t => t.classList.remove("selected"));
+
+          renderIndusSlots();
+          renderIndusTray();
+          audio.playPushSound();
+        }
+
+        function renderIndusSlots() {
+          for (let i = 0; i < 3; i++) {
+            const slotEl = document.getElementById(`slot-${i}`);
+            if (!slotEl) continue;
+            slotEl.innerHTML = `<span class="seal-slot-label">Slot ${i + 1}</span>`;
+
+            const sealId = gameState.indus.slots[i];
+            if (sealId && SEAL_DATA[sealId]) {
+              const seal = SEAL_DATA[sealId];
+              const badge = document.createElement("div");
+              badge.style.display = "flex";
+              badge.style.flexDirection = "column";
+              badge.style.alignItems = "center";
+              badge.innerHTML = `<span style="font-size: 1.8rem;">${seal.icon}</span><span style="font-size: 0.62rem; font-weight: 800; color: var(--indus-clay); text-transform: uppercase;">${seal.name}</span>`;
+              slotEl.appendChild(badge);
+            }
+          }
+        }
+
+        function renderIndusTray() {
+          ["unicorn", "fish", "jar"].forEach(sealId => {
+            const token = document.getElementById(`seal-${sealId}`);
+            if (!token) return;
+            const isPlaced = gameState.indus.slots.includes(sealId);
+            if (isPlaced) {
+              token.style.opacity = "0.35";
+              token.style.pointerEvents = "none";
+            } else {
+              token.style.opacity = "1";
+              token.style.pointerEvents = "auto";
+            }
+          });
+        }
+
+        function resetIndusSeals() {
+          gameState.indus.slots = [null, null, null];
+          gameState.indus.selectedPedestalSeal = null;
+          document.querySelectorAll(".seal-token").forEach(t => t.classList.remove("selected"));
+          renderIndusSlots();
+          renderIndusTray();
+          document.getElementById("seal-feedback-msg").textContent = "";
+          audio.playMoveSound();
+        }
+
+        function checkIndusSeals() {
+          const slots = gameState.indus.slots;
+          const msg = document.getElementById("seal-feedback-msg");
+
+          if (slots.includes(null)) {
+            msg.style.color = "#c2410c";
+            msg.textContent = "Place all three seals (Slot 1, 2, and 3) into the carved door.";
+            return;
+          }
+
+          // Exact target order: FISH (0), JAR (1), UNICORN (2)
+          const isCorrect = slots[0] === "fish" && slots[1] === "jar" && slots[2] === "unicorn";
+
+          if (isCorrect) {
+            msg.style.color = "#059669";
+            msg.textContent = "✦ SUCCESS: The ancient gears turn! The stone door rumbles and slides open!";
+            audio.playStoneMechanismSound();
+            triggerCompanionDialogue("india", "progress");
+
+            setTimeout(() => {
+              const mathBox = document.getElementById("indus-stage-math");
+              if (mathBox) {
+                mathBox.style.display = "flex";
+                mathBox.scrollIntoView({ behavior: "smooth" });
+              }
+            }, 800);
+          } else {
+            gameState.indus.attempts++;
+            msg.style.color = "#c2410c";
+            msg.textContent = "The seals remain still. The alignment is incorrect. Re-read the clues and try again.";
+            audio.playCrackSound();
+            triggerCompanionDialogue("india", "invalid");
+          }
+        }
+
+        function checkIndusMath() {
+          const input = document.getElementById("indus-math-input");
+          const feedback = document.getElementById("indus-math-feedback");
+          if (!input || !feedback) return;
+
+          const val = input.value.trim();
+
+          // Equation: 4x + 4 = 28  =>  x = 6
+          if (val === "6") {
+            feedback.style.color = "#059669";
+            feedback.textContent = "✦ The tablet illuminates with golden radiance!";
+            audio.playWinSound();
+            triggerCompanionDialogue("india", "treasure");
+
+            setTimeout(() => {
+              const treasureBox = document.getElementById("indus-stage-treasure");
+              if (treasureBox) {
+                treasureBox.style.display = "block";
+                treasureBox.scrollIntoView({ behavior: "smooth" });
+              }
+            }, 600);
+          } else {
+            gameState.indus.attempts++;
+            feedback.style.color = "#c2410c";
+            feedback.textContent = `"${val}" is not the number. Think carefully: (Number × 4) + 4 = 28.`;
+            audio.playCrackSound();
+          }
+        }
+
+        function showIndusHint() {
+          gameState.indus.hintsUsed++;
+          const feedback = document.getElementById("indus-math-feedback");
+          if (feedback) {
+            feedback.style.color = "var(--indus-gold)";
+            feedback.textContent = "Hint: Subtract 4 from 28 first (24), then divide by 4.";
+          }
+        }
+
+        function finishIndusLevel() {
+          clearInterval(gameState.indus.timerInterval);
+          gameState.completedLevels[1] = 1;
+          gameState.unlockedLevels[2] = 1; // Unlock Egypt!
+          gameState.levelStars[1] = 3;
+          triggerCompanionDialogue("india", "success");
+
+          const mins = Math.floor(gameState.indus.timerSeconds / 60).toString().padStart(2, "0");
+          const secs = (gameState.indus.timerSeconds % 60).toString().padStart(2, "0");
+
+          document.getElementById("indus-stat-time").textContent = `${mins}:${secs}`;
+          document.getElementById("indus-stat-attempts").textContent = gameState.indus.attempts;
+          document.getElementById("indus-stat-hints").textContent = gameState.indus.hintsUsed;
+          document.getElementById("indus-stat-artifacts").textContent = `${gameState.indus.inspectedArtifacts.size} / 4`;
+
+          document.getElementById("indus-complete-modal").classList.add("active");
+          audio.playWinSound();
+        }
+
+        /* ========================================================================
+           3. EGYPT: ANKH LINK ENGINE (5x5 HIEROGLYPHIC CONDUIT PATHS)
+           ======================================================================== */
+        function isAnkhEndpoint(r, c) {
+          const syms = gameState.ankh.symbols;
+          for (const key of Object.keys(syms)) {
+            const sym = syms[key];
+            if (sym.endpoints.some(e => e.r === r && e.c === c)) {
+              return sym;
+            }
+          }
+          return null;
+        }
+
+        function getAnkhOccupyingSymbol(r, c) {
+          const paths = gameState.ankh.paths;
+          for (const key of Object.keys(paths)) {
+            if (paths[key].some(p => p.r === r && p.c === c)) {
+              return key;
+            }
+          }
+          return null;
+        }
+
+        function isAnkhPairConnected(symbolKey) {
+          const path = gameState.ankh.paths[symbolKey];
+          const sym = gameState.ankh.symbols[symbolKey];
+          if (!path || path.length < 2) return false;
+
+          const start = path[0];
+          const end = path[path.length - 1];
+          const e1 = sym.endpoints[0];
+          const e2 = sym.endpoints[1];
+
+          return (
+            (start.r === e1.r && start.c === e1.c && end.r === e2.r && end.c === e2.c) ||
+            (start.r === e2.r && start.c === e2.c && end.r === e1.r && end.c === e1.c)
+          );
+        }
+
+        function initEgyptAnkhLevel() {
+          gameState.ankh.paths = {
+            ankh: [],
+            horus: [],
+            scarab: [],
+            feather: []
+          };
+          gameState.ankh.history = [];
+          gameState.ankh.isWon = false;
+          gameState.ankh.timerSeconds = 0;
+          gameState.ankh.activeSymbol = "ankh";
+
+          clearInterval(gameState.ankh.timerInterval);
+          gameState.ankh.timerInterval = setInterval(() => {
+            if (!gameState.ankh.isWon) {
+              gameState.ankh.timerSeconds++;
+              updateAnkhTimerUI();
+            }
+          }, 1000);
+
+          const victoryBanner = document.getElementById("ankh-victory-banner");
+          if (victoryBanner) victoryBanner.classList.remove("active");
+
+          renderAnkhGrid();
+          updateAnkhStatusUI();
+          updateAnkhTimerUI();
+        }
+
+        function updateAnkhTimerUI() {
+          const mins = Math.floor(gameState.ankh.timerSeconds / 60).toString().padStart(2, "0");
+          const secs = (gameState.ankh.timerSeconds % 60).toString().padStart(2, "0");
+          const el = document.getElementById("ankh-timer");
+          if (el) el.textContent = `${mins}:${secs}`;
+        }
+
+        function updateAnkhStatusUI() {
+          const symKeys = ["ankh", "horus", "scarab", "feather"];
+          let connectedCount = 0;
+          let coveredCells = new Set();
+
+          symKeys.forEach(k => {
+            const isConn = isAnkhPairConnected(k);
+            if (isConn) connectedCount++;
+
+            const statusEl = document.getElementById(`status-${k}`);
+            const chipEl = document.getElementById(`chip-${k}`);
+            if (statusEl) statusEl.textContent = isConn ? "✓" : "○";
+            if (chipEl) {
+              if (isConn) chipEl.classList.add("completed");
+              else chipEl.classList.remove("completed");
+
+              if (gameState.ankh.activeSymbol === k) chipEl.classList.add("active");
+              else chipEl.classList.remove("active");
+            }
+
+            gameState.ankh.paths[k].forEach(p => {
+              coveredCells.add(`${p.r},${p.c}`);
+            });
+          });
+
+          // Also count endpoints
+          symKeys.forEach(k => {
+            gameState.ankh.symbols[k].endpoints.forEach(e => {
+              coveredCells.add(`${e.r},${e.c}`);
+            });
+          });
+
+          const linksText = document.getElementById("ankh-links-text");
+          const covText = document.getElementById("ankh-coverage-text");
+          if (linksText) linksText.textContent = `${connectedCount} / 4`;
+          if (covText) covText.textContent = `${coveredCells.size} / 25`;
+        }
+
+        function renderAnkhGrid() {
+          const gridEl = document.getElementById("ankh-grid");
+          const svgEl = document.getElementById("ankh-svg");
+          if (!gridEl || !svgEl) return;
+
+          const cells = gridEl.querySelectorAll(".ankh-cell");
+          cells.forEach(c => c.remove());
+
+          for (let r = 0; r < 5; r++) {
+            for (let c = 0; c < 5; c++) {
+              const cell = document.createElement("div");
+              cell.className = "ankh-cell";
+              cell.dataset.r = r;
+              cell.dataset.c = c;
+
+              const ep = isAnkhEndpoint(r, c);
+              if (ep) {
+                cell.classList.add("endpoint");
+                cell.style.color = ep.color;
+                const icon = document.createElement("span");
+                icon.className = "glyph-icon";
+                icon.textContent = ep.glyph;
+                cell.appendChild(icon);
+
+                if (isAnkhPairConnected(ep.id)) {
+                  cell.classList.add("connected");
+                }
+              }
+
+              const occupyingSym = getAnkhOccupyingSymbol(r, c);
+              if (occupyingSym) {
+                cell.classList.add("in-path");
+                const symColor = gameState.ankh.symbols[occupyingSym].color;
+                cell.style.borderColor = symColor;
+              }
+
+              cell.addEventListener("click", () => handleAnkhCellClick(r, c));
+              gridEl.appendChild(cell);
+            }
+          }
+
+          renderAnkhSVG();
+        }
+
+        function renderAnkhSVG() {
+          const svgEl = document.getElementById("ankh-svg");
+          const gridEl = document.getElementById("ankh-grid");
+          if (!svgEl || !gridEl) return;
+
+          svgEl.innerHTML = "";
+          const gridRect = gridEl.getBoundingClientRect();
+
+          ["ankh", "horus", "scarab", "feather"].forEach(symKey => {
+            const path = gameState.ankh.paths[symKey];
+            if (!path || path.length < 2) return;
+
+            let pathD = "";
+            path.forEach((p, idx) => {
+              const cell = gridEl.querySelector(`.ankh-cell[data-r="${p.r}"][data-c="${p.c}"]`);
+              if (!cell) return;
+              const rect = cell.getBoundingClientRect();
+              const cx = rect.left - gridRect.left + rect.width / 2;
+              const cy = rect.top - gridRect.top + rect.height / 2;
+
+              if (idx === 0) pathD += `M ${cx} ${cy} `;
+              else pathD += `L ${cx} ${cy} `;
+            });
+
+            const strokeColor = gameState.ankh.symbols[symKey].color;
+            const pathLine = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            pathLine.setAttribute("d", pathD);
+            pathLine.setAttribute("fill", "none");
+            pathLine.setAttribute("stroke", strokeColor);
+            pathLine.setAttribute("stroke-width", "6");
+            pathLine.setAttribute("stroke-linecap", "round");
+            pathLine.setAttribute("stroke-linejoin", "round");
+            pathLine.setAttribute("stroke-opacity", "0.92");
+            svgEl.appendChild(pathLine);
+          });
+        }
+
+        function handleAnkhCellClick(r, c) {
+          if (gameState.ankh.isWon) return;
+
+          const activeKey = gameState.ankh.activeSymbol;
+          const currentPath = gameState.ankh.paths[activeKey];
+          const ep = isAnkhEndpoint(r, c);
+
+          // If clicking an endpoint of another symbol, switch active symbol to that!
+          if (ep && ep.id !== activeKey) {
+            gameState.ankh.activeSymbol = ep.id;
+            updateAnkhStatusUI();
+            audio.playMoveSound();
+
+            // If that symbol had no path, start it at this endpoint
+            if (gameState.ankh.paths[ep.id].length === 0) {
+              gameState.ankh.paths[ep.id] = [{ r, c }];
+              renderAnkhGrid();
+            }
+            return;
+          }
+
+          // If clicking an endpoint of current symbol
+          if (ep && ep.id === activeKey) {
+            if (currentPath.length === 0) {
+              currentPath.push({ r, c });
+              audio.playMoveSound();
+              renderAnkhGrid();
+              updateAnkhStatusUI();
+              return;
+            }
+          }
+
+          // If no active path yet and clicked a normal cell, return
+          if (currentPath.length === 0) return;
+
+          const head = currentPath[currentPath.length - 1];
+
+          // If already at goal endpoint, clicking anywhere on current path rewinds to that cell
+          const existingIndex = currentPath.findIndex(p => p.r === r && p.c === c);
+          if (existingIndex !== -1) {
+            currentPath.splice(existingIndex + 1);
+            audio.playMoveSound();
+            renderAnkhGrid();
+            updateAnkhStatusUI();
+            return;
+          }
+
+          // Check orthogonal step from current head
+          const dr = Math.abs(head.r - r);
+          const dc = Math.abs(head.c - c);
+          if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+            // Cannot step on an endpoint belonging to a DIFFERENT symbol
+            if (ep && ep.id !== activeKey) {
+              audio.playCrackSound();
+              triggerCompanionDialogue("egypt", "invalid");
+              return;
+            }
+
+            // Cannot step on another symbol's active path
+            const occupyingSym = getAnkhOccupyingSymbol(r, c);
+            if (occupyingSym && occupyingSym !== activeKey) {
+              audio.playCrackSound();
+              triggerCompanionDialogue("egypt", "invalid");
+              return;
+            }
+
+            // If already connected, cannot extend past matching endpoint
+            if (isAnkhPairConnected(activeKey)) {
+              return;
+            }
+
+            currentPath.push({ r, c });
+            audio.playMoveSound();
+
+            if (isAnkhPairConnected(activeKey)) {
+              audio.playEgyptianChime();
+              const connectedSoFar = ["ankh", "horus", "scarab", "feather"].filter(k => isAnkhPairConnected(k)).length;
+              if (connectedSoFar === 2) {
+                triggerCompanionDialogue("egypt", "progress");
+              }
+            }
+
+            renderAnkhGrid();
+            updateAnkhStatusUI();
+            checkAnkhWin();
+          }
+        }
+
+        function clearActiveAnkhPath() {
+          const sym = gameState.ankh.activeSymbol;
+          gameState.ankh.paths[sym] = [];
+          audio.playMoveSound();
+          renderAnkhGrid();
+          updateAnkhStatusUI();
+        }
+
+        function resetAllAnkhPaths() {
+          gameState.ankh.paths = {
+            ankh: [],
+            horus: [],
+            scarab: [],
+            feather: []
+          };
+          audio.playMoveSound();
+          renderAnkhGrid();
+          updateAnkhStatusUI();
+        }
+
+        function undoAnkhStep() {
+          const sym = gameState.ankh.activeSymbol;
+          const path = gameState.ankh.paths[sym];
+          if (path.length > 0) {
+            path.pop();
+            audio.playMoveSound();
+            renderAnkhGrid();
+            updateAnkhStatusUI();
+          }
+        }
+
+        function checkAnkhWin() {
+          const symKeys = ["ankh", "horus", "scarab", "feather"];
+          const allConnected = symKeys.every(k => isAnkhPairConnected(k));
+          if (!allConnected) return;
+
+          // Check if all 25 cells are covered
+          let totalCells = new Set();
+          symKeys.forEach(k => {
+            gameState.ankh.paths[k].forEach(p => totalCells.add(`${p.r},${p.c}`));
+          });
+
+          if (totalCells.size === 25 && !gameState.ankh.isWon) {
+            gameState.ankh.isWon = true;
+            clearInterval(gameState.ankh.timerInterval);
+            audio.playEgyptianChime();
+            triggerCompanionDialogue("egypt", "success");
+
+            const victoryBanner = document.getElementById("ankh-victory-banner");
+            if (victoryBanner) victoryBanner.classList.add("active");
+
+            gameState.completedLevels[2] = 1;
+            gameState.levelStars[2] = 3;
+
+            setTimeout(() => {
+              showLevelCompleteModal(
+                "Temple of Horus (Egypt)",
+                3,
+                "25 / 25 Slabs Illuminated",
+                gameState.ankh.timerSeconds,
+                () => {
+                  switchScreen("map", "zoom-out");
+                },
+                () => {
+                  initEgyptAnkhLevel();
+                }
+              );
+            }, 1200);
+          }
+        }
+
+        /* ========================================================================
+           GENERIC LEVEL COMPLETE MODAL
+           ======================================================================== */
+        let currentModalContinueCb = null;
+        let currentModalReplayCb = null;
+
+        function showLevelCompleteModal(levelName, stars, scoreText, timerSeconds, onContinue, onReplay) {
+          audio.playWinSound();
+          currentModalContinueCb = onContinue;
+          currentModalReplayCb = onReplay;
+
+          const modal = document.getElementById("level-complete-modal");
+          document.getElementById("modal-level-name").textContent = levelName;
+          document.getElementById("modal-stars").textContent = "⭐".repeat(stars) + "☆".repeat(3 - stars);
+          document.getElementById("modal-moves").textContent = scoreText;
+
+          const mins = Math.floor(timerSeconds / 60).toString().padStart(2, "0");
+          const secs = (timerSeconds % 60).toString().padStart(2, "0");
+          document.getElementById("modal-time").textContent = `${mins}:${secs}`;
+
+          modal.classList.add("active");
+        }
+
+        /* ========================================================================
+           EVENT LISTENERS & BINDINGS
+           ======================================================================== */
+        function setupEventListeners() {
+          // Title Start Button
+          document.getElementById("btn-start-game")?.addEventListener("click", () => {
+            audio.init();
+            audio.playMoveSound();
+            switchScreen("characters");
+          });
+
+          // Companion 6-Card Selection
+          ["amara", "vikram", "yuki", "kenji", "kiya", "ahmose"].forEach(charId => {
+            document.getElementById(`card-${charId}`)?.addEventListener("click", () => {
+              selectCompanionCard(charId);
+            });
+          });
+
+          document.getElementById("btn-char-confirm-expedition")?.addEventListener("click", () => {
+            audio.init();
+            audio.playMoveSound();
+            updateCompanionPresentations();
+            switchScreen("map", "zoom-in");
+          });
+
+          document.getElementById("btn-char-back-title")?.addEventListener("click", () => {
+            audio.playMoveSound();
+            switchScreen("title");
+          });
+
+          // In-Level Companion Interaction (Guidance & Figure clicks)
+          document.getElementById("btn-zen-ask-companion")?.addEventListener("click", () => triggerCompanionDialogue("japan", "hint"));
+          document.getElementById("zen-companion-figure")?.addEventListener("click", () => triggerCompanionDialogue("japan", "hint"));
+          document.getElementById("zen-speech-bubble")?.addEventListener("click", function() { this.classList.remove("active"); });
+
+          document.getElementById("btn-indus-ask-companion")?.addEventListener("click", () => triggerCompanionDialogue("india", "hint"));
+          document.getElementById("indus-companion-figure")?.addEventListener("click", () => triggerCompanionDialogue("india", "hint"));
+          document.getElementById("indus-speech-bubble")?.addEventListener("click", function() { this.classList.remove("active"); });
+
+          document.getElementById("btn-ankh-ask-companion")?.addEventListener("click", () => triggerCompanionDialogue("egypt", "hint"));
+          document.getElementById("ankh-companion-figure")?.addEventListener("click", () => triggerCompanionDialogue("egypt", "hint"));
+          document.getElementById("ankh-speech-bubble")?.addEventListener("click", function() { this.classList.remove("active"); });
+
+          // World Map UI
+          document.getElementById("btn-map-change-guide")?.addEventListener("click", () => {
+            audio.playMoveSound();
+            switchScreen("characters");
+          });
+
+          document.getElementById("btn-back-to-title")?.addEventListener("click", () => {
+            audio.playMoveSound();
+            switchScreen("characters");
+          });
+
+          // Map Nodes
+          [1, 2, 3].forEach(lvlId => {
+            document.getElementById(`map-node-${lvlId}`)?.addEventListener("click", () => {
+              if (gameState.unlockedLevels[lvlId - 1] === 1) {
+                startLevel(lvlId);
+              }
+            });
+          });
+
+          // Japan Zen Controls
+          document.getElementById("btn-zen-back-map")?.addEventListener("click", () => {
+            clearInterval(gameState.zen.timerInterval);
+            audio.playMoveSound();
+            switchScreen("map", "zoom-out");
+          });
+
+          document.getElementById("btn-zen-undo")?.addEventListener("click", undoZenStep);
+          document.getElementById("btn-zen-reset")?.addEventListener("click", resetZenLevel);
+
+          // Dpad controls for Zen Trail
+          document.querySelectorAll("#screen-japan-zen .dpad-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+              e.preventDefault();
+              const dir = btn.dataset.dir;
+              if (dir === "up") moveZenDir(-1, 0);
+              if (dir === "down") moveZenDir(1, 0);
+              if (dir === "left") moveZenDir(0, -1);
+              if (dir === "right") moveZenDir(0, 1);
+            });
+          });
+
+          // India Controls
+          document.getElementById("btn-indus-back-map")?.addEventListener("click", () => {
+            clearInterval(gameState.indus.timerInterval);
+            audio.playMoveSound();
+            switchScreen("map", "zoom-out");
+          });
+
+          document.getElementById("btn-indus-enter")?.addEventListener("click", enterIndusChamber);
+          document.getElementById("btn-indus-skip")?.addEventListener("click", enterIndusChamber);
+
+          // Artifact inspection
+          document.querySelectorAll(".artifact-card").forEach(card => {
+            card.addEventListener("click", () => {
+              const art = card.dataset.artifact;
+              inspectArtifact(art);
+            });
+          });
+
+          document.getElementById("btn-close-artifact-modal")?.addEventListener("click", () => {
+            document.getElementById("artifact-inspect-modal").classList.remove("active");
+          });
+
+          // Three-seal selection & slot placement
+          ["unicorn", "fish", "jar"].forEach(sealId => {
+            document.getElementById(`seal-${sealId}`)?.addEventListener("click", () => {
+              selectPedestalSeal(sealId);
+            });
+          });
+
+          [0, 1, 2].forEach(slotIdx => {
+            document.getElementById(`slot-${slotIdx}`)?.addEventListener("click", () => {
+              placeSealInSlot(slotIdx);
+            });
+          });
+
+          document.getElementById("btn-indus-reset-seals")?.addEventListener("click", resetIndusSeals);
+          document.getElementById("btn-indus-check-seals")?.addEventListener("click", checkIndusSeals);
+
+          // Math Inscription
+          document.getElementById("btn-indus-submit-math")?.addEventListener("click", checkIndusMath);
+          document.getElementById("indus-math-input")?.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") checkIndusMath();
+          });
+          document.getElementById("btn-indus-math-hint")?.addEventListener("click", showIndusHint);
+
+          // Treasure & Finish
+          document.getElementById("btn-indus-finish")?.addEventListener("click", finishIndusLevel);
+
+          document.getElementById("btn-indus-continue-map")?.addEventListener("click", () => {
+            document.getElementById("indus-complete-modal").classList.remove("active");
+            switchScreen("map", "zoom-out");
+          });
+
+          document.getElementById("btn-indus-replay")?.addEventListener("click", () => {
+            document.getElementById("indus-complete-modal").classList.remove("active");
+            startIndiaLevel();
+          });
+
+          // Egypt Ankh Controls
+          document.getElementById("btn-ankh-back-map")?.addEventListener("click", () => {
+            clearInterval(gameState.ankh.timerInterval);
+            audio.playMoveSound();
+            switchScreen("map", "zoom-out");
+          });
+
+          ["ankh", "horus", "scarab", "feather"].forEach(sym => {
+            document.getElementById(`chip-${sym}`)?.addEventListener("click", () => {
+              gameState.ankh.activeSymbol = sym;
+              audio.playMoveSound();
+              updateAnkhStatusUI();
+            });
+          });
+
+          document.getElementById("btn-ankh-undo")?.addEventListener("click", undoAnkhStep);
+          document.getElementById("btn-ankh-clear-active")?.addEventListener("click", clearActiveAnkhPath);
+          document.getElementById("btn-ankh-reset-all")?.addEventListener("click", resetAllAnkhPaths);
+
+          // Level Complete Modal actions
+          document.getElementById("btn-modal-continue")?.addEventListener("click", () => {
+            document.getElementById("level-complete-modal").classList.remove("active");
+            if (currentModalContinueCb) currentModalContinueCb();
+          });
+
+          document.getElementById("btn-modal-replay")?.addEventListener("click", () => {
+            document.getElementById("level-complete-modal").classList.remove("active");
+            if (currentModalReplayCb) currentModalReplayCb();
+          });
+
+          // Audio System Controls & Volume Sliders
+          function updateAudioUI(isMuted) {
+            const toggleBtn = document.getElementById("audio-toggle-btn");
+            const muteBtn = document.getElementById("btn-audio-mute-toggle");
+            if (toggleBtn) toggleBtn.textContent = isMuted ? "🔇" : "🔊";
+            if (muteBtn) muteBtn.textContent = isMuted ? "Unmute Audio" : "Mute All Audio";
+          }
+
+          document.getElementById("audio-toggle-btn")?.addEventListener("click", () => {
+            if (audio) {
+              audio.init();
+              const muted = audio.toggleMute();
+              updateAudioUI(muted);
+            }
+          });
+
+          document.getElementById("btn-audio-mute-toggle")?.addEventListener("click", () => {
+            if (audio) {
+              audio.init();
+              const muted = audio.toggleMute();
+              updateAudioUI(muted);
+            }
+          });
+
+          const audioDrawer = document.getElementById("audio-settings-drawer");
+          document.getElementById("audio-settings-btn")?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (audioDrawer) audioDrawer.classList.toggle("active");
+          });
+
+          document.addEventListener("click", (e) => {
+            if (audioDrawer && audioDrawer.classList.contains("active")) {
+              if (!audioDrawer.contains(e.target) && e.target.id !== "audio-settings-btn") {
+                audioDrawer.classList.remove("active");
+              }
+            }
+          });
+
+          document.getElementById("slider-music-vol")?.addEventListener("input", (e) => {
+            if (audio) {
+              audio.init();
+              audio.setMusicVolume(Number(e.target.value) / 100);
+            }
+          });
+
+          document.getElementById("slider-sfx-vol")?.addEventListener("input", (e) => {
+            if (audio) {
+              audio.init();
+              audio.setSfxVolume(Number(e.target.value) / 100);
+            }
+          });
+
+          // Global Keyboard Shortcuts
+          window.addEventListener("keydown", (e) => {
+            if (gameState.currentScreen === "title") {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                audio.init();
+                audio.playMoveSound();
+                switchScreen("characters");
+              }
+              return;
+            }
+
+            if (gameState.currentScreen === "characters") {
+              if (e.key === "1") selectCompanionCard("amara");
+              if (e.key === "2") selectCompanionCard("vikram");
+              if (e.key === "3") selectCompanionCard("yuki");
+              if (e.key === "4") selectCompanionCard("kenji");
+              if (e.key === "5") selectCompanionCard("kiya");
+              if (e.key === "6") selectCompanionCard("ahmose");
+              if (e.key === "Enter") {
+                e.preventDefault();
+                audio.init();
+                audio.playMoveSound();
+                updateCompanionPresentations();
+                switchScreen("map", "zoom-in");
+              }
+              if (e.key === "Escape") switchScreen("title");
+              return;
+            }
+
+            if (e.key === "Escape") {
+              if (gameState.currentScreen === "japanZen" || gameState.currentScreen === "indiaChamber" || gameState.currentScreen === "egyptAnkh") {
+                clearInterval(gameState.zen.timerInterval);
+                clearInterval(gameState.indus.timerInterval);
+                clearInterval(gameState.ankh.timerInterval);
+                switchScreen("map", "zoom-out");
+              } else if (gameState.currentScreen === "map") {
+                switchScreen("characters");
+              }
+              return;
+            }
+
+            if (e.key === "m" || e.key === "M") {
+              if (audio) {
+                audio.init();
+                const isMuted = audio.toggleMute();
+                updateAudioUI(isMuted);
+              }
+              return;
+            }
+
+            // Japan Zen Trail controls
+            if (gameState.currentScreen === "japanZen") {
+              if (e.key === "u" || e.key === "U") { undoZenStep(); return; }
+              if (e.key === "r" || e.key === "R") { resetZenLevel(); return; }
+
+              switch (e.key) {
+                case "ArrowUp": case "w": case "W": e.preventDefault(); moveZenDir(-1, 0); break;
+                case "ArrowDown": case "s": case "S": e.preventDefault(); moveZenDir(1, 0); break;
+                case "ArrowLeft": case "a": case "A": e.preventDefault(); moveZenDir(0, -1); break;
+                case "ArrowRight": case "d": case "D": e.preventDefault(); moveZenDir(0, 1); break;
+              }
+            }
+
+            // Egypt Ankh Link controls
+            if (gameState.currentScreen === "egyptAnkh") {
+              if (e.key === "u" || e.key === "U") { undoAnkhStep(); return; }
+              if (e.key === "r" || e.key === "R") { resetAllAnkhPaths(); return; }
+              if (e.key === "1") { gameState.ankh.activeSymbol = "ankh"; updateAnkhStatusUI(); }
+              if (e.key === "2") { gameState.ankh.activeSymbol = "horus"; updateAnkhStatusUI(); }
+              if (e.key === "3") { gameState.ankh.activeSymbol = "scarab"; updateAnkhStatusUI(); }
+              if (e.key === "4") { gameState.ankh.activeSymbol = "feather"; updateAnkhStatusUI(); }
+            }
+          });
+
+          // Resize handler to re-align SVG paths on screen change or window resize
+          window.addEventListener("resize", () => {
+            if (gameState.currentScreen === "japanZen") renderZenSVG();
+            if (gameState.currentScreen === "egyptAnkh") renderAnkhSVG();
+          });
+        }
+
+        // Initialize application on startup
+        setupEventListeners();
+        updateGuideUI();
+        updateWorldMapUI();
+        setWorldEnvironment("parchment");
+        renderCompanionSelectPreviews();
+        updateCompanionPresentations();
+      })();
+    </script>
+  </body>
+</html>
